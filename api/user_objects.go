@@ -1,18 +1,6 @@
-// This file is part of MinIO Console Server
-// Copyright (c) 2021 MinIO, Inc.
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// SPDX-FileCopyrightText: 2025 openstor contributors
+// SPDX-FileCopyrightText: 2015-2025 MinIO, Inc.
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package api
 
@@ -30,20 +18,20 @@ import (
 	"strings"
 	"time"
 
-	"github.com/minio/minio-go/v7"
+	"github.com/openstor/openstor-go/v7"
 
-	"github.com/minio/console/pkg/utils"
+	"github.com/openstor/console/pkg/utils"
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/klauspost/compress/zip"
-	"github.com/minio/console/api/operations"
-	objectApi "github.com/minio/console/api/operations/object"
-	"github.com/minio/console/models"
-	mc "github.com/minio/mc/cmd"
-	"github.com/minio/mc/pkg/probe"
-	"github.com/minio/minio-go/v7/pkg/tags"
-	"github.com/minio/pkg/v3/mimedb"
+	"github.com/openstor/console/api/operations"
+	objectApi "github.com/openstor/console/api/operations/object"
+	"github.com/openstor/console/models"
+	mc "github.com/openstor/mc/cmd"
+	"github.com/openstor/mc/pkg/probe"
+	"github.com/openstor/openstor-go/v7/pkg/tags"
+	"github.com/openstor/pkg/v3/mimedb"
 )
 
 // enum types
@@ -243,7 +231,7 @@ type ListObjectsOpts struct {
 // listBucketObjects gets an array of objects in a bucket
 func listBucketObjects(listOpts ListObjectsOpts) ([]*models.BucketObject, error) {
 	var objects []*models.BucketObject
-	opts := minio.ListObjectsOptions{
+	opts := openstor.ListObjectsOptions{
 		Prefix:       listOpts.prefix,
 		Recursive:    listOpts.recursive,
 		WithVersions: listOpts.withVersions,
@@ -277,9 +265,9 @@ func listBucketObjects(listOpts ListObjectsOpts) ([]*models.BucketObject, error)
 		// only if single object with or without versions; get legalhold, retention and tags
 		if !lsObj.IsDeleteMarker && listOpts.prefix != "" && !strings.HasSuffix(listOpts.prefix, "/") {
 			// Add Legal Hold Status if available
-			legalHoldStatus, err := listOpts.client.getObjectLegalHold(listOpts.ctx, listOpts.bucketName, lsObj.Key, minio.GetObjectLegalHoldOptions{VersionID: lsObj.VersionID})
+			legalHoldStatus, err := listOpts.client.getObjectLegalHold(listOpts.ctx, listOpts.bucketName, lsObj.Key, openstor.GetObjectLegalHoldOptions{VersionID: lsObj.VersionID})
 			if err != nil {
-				errResp := minio.ToErrorResponse(probe.NewError(err).ToGoError())
+				errResp := openstor.ToErrorResponse(probe.NewError(err).ToGoError())
 				if errResp.Code != "InvalidRequest" && errResp.Code != "NoSuchObjectLockConfiguration" {
 					ErrorWithContext(listOpts.ctx, fmt.Errorf("error getting legal hold status for %s : %v", lsObj.VersionID, err))
 				}
@@ -289,7 +277,7 @@ func listBucketObjects(listOpts ListObjectsOpts) ([]*models.BucketObject, error)
 			// Add Retention Status if available
 			retention, retUntilDate, err := listOpts.client.getObjectRetention(listOpts.ctx, listOpts.bucketName, lsObj.Key, lsObj.VersionID)
 			if err != nil {
-				errResp := minio.ToErrorResponse(probe.NewError(err).ToGoError())
+				errResp := openstor.ToErrorResponse(probe.NewError(err).ToGoError())
 				if errResp.Code != "InvalidRequest" && errResp.Code != "NoSuchObjectLockConfiguration" {
 					ErrorWithContext(listOpts.ctx, fmt.Errorf("error getting retention status for %s : %v", lsObj.VersionID, err))
 				}
@@ -298,7 +286,7 @@ func listBucketObjects(listOpts ListObjectsOpts) ([]*models.BucketObject, error)
 				obj.RetentionMode = string(*retention)
 				obj.RetentionUntilDate = date.Format(time.RFC3339)
 			}
-			objTags, err := listOpts.client.getObjectTagging(listOpts.ctx, listOpts.bucketName, lsObj.Key, minio.GetObjectTaggingOptions{VersionID: lsObj.VersionID})
+			objTags, err := listOpts.client.getObjectTagging(listOpts.ctx, listOpts.bucketName, lsObj.Key, openstor.GetObjectTaggingOptions{VersionID: lsObj.VersionID})
 			if err != nil {
 				ErrorWithContext(listOpts.ctx, fmt.Errorf("error getting object tags for %s : %v", lsObj.VersionID, err))
 			} else {
@@ -405,7 +393,7 @@ func getDownloadObjectResponse(session *models.Principal, params objectApi.Downl
 		return nil, ErrorWithContext(ctx, err)
 	}
 
-	opts := minio.GetObjectOptions{}
+	opts := openstor.GetObjectOptions{}
 
 	if params.VersionID != nil && *params.VersionID != "" {
 		opts.VersionID = *params.VersionID
@@ -440,7 +428,7 @@ func getDownloadObjectResponse(session *models.Principal, params objectApi.Downl
 		// indicate object size & content type
 		stat, err := resp.Stat()
 		if err != nil {
-			minErr := minio.ToErrorResponse(err)
+			minErr := openstor.ToErrorResponse(err)
 			fmtError := ErrorWithContext(ctx, fmt.Errorf("failed to get Stat() response from server for %s (version %s): %v", params.Prefix, opts.VersionID, minErr.Error()))
 			http.Error(rw, fmtError.APIError.DetailedMessage, http.StatusInternalServerError)
 			return
@@ -537,7 +525,7 @@ func getDownloadFolderResponse(session *models.Principal, params objectApi.Downl
 
 		for i, obj := range objects {
 			name := folder + objects[i].Name[len(params.Prefix)-1:]
-			object, err := mClient.GetObject(ctx, params.BucketName, obj.Name, minio.GetObjectOptions{})
+			object, err := mClient.GetObject(ctx, params.BucketName, obj.Name, openstor.GetObjectOptions{})
 			if err != nil {
 				// Ignore errors, move to next
 				continue
@@ -648,7 +636,7 @@ func getMultipleFilesDownloadResponse(session *models.Principal, params objectAp
 				for i, obj := range objects {
 					name := folder + objects[i].Name[len(prefix)-1:]
 
-					object, err := mClient.GetObject(ctx, params.BucketName, obj.Name, minio.GetObjectOptions{})
+					object, err := mClient.GetObject(ctx, params.BucketName, obj.Name, openstor.GetObjectOptions{})
 					if err != nil {
 						// Ignore errors, move to next
 						continue
@@ -672,7 +660,7 @@ func getMultipleFilesDownloadResponse(session *models.Principal, params objectAp
 				}
 
 			} else {
-				object, err := mClient.GetObject(ctx, params.BucketName, dObj, minio.GetObjectOptions{})
+				object, err := mClient.GetObject(ctx, params.BucketName, dObj, openstor.GetObjectOptions{})
 				if err != nil {
 					// Ignore errors, move to next
 					continue
@@ -983,7 +971,7 @@ func uploadFiles(ctx context.Context, client MinioClient, params objectApi.PostB
 			contentType = mimedb.TypeByExtension(filepath.Ext(p.FileName()))
 		}
 		objectName := prefix // prefix will have complete object path e.g: /test-prefix/test-object.txt
-		_, err = client.putObject(ctx, params.BucketName, objectName, p, size, minio.PutObjectOptions{
+		_, err = client.putObject(ctx, params.BucketName, objectName, p, size, openstor.PutObjectOptions{
 			ContentType:      contentType,
 			DisableMultipart: true, // Do not upload as multipart stream for console uploader.
 		})
@@ -1070,13 +1058,13 @@ func getSetObjectLegalHoldResponse(session *models.Principal, params objectApi.P
 }
 
 func setObjectLegalHold(ctx context.Context, client MinioClient, bucketName, prefix, versionID string, status models.ObjectLegalHoldStatus) error {
-	var lstatus minio.LegalHoldStatus
+	var lstatus openstor.LegalHoldStatus
 	if status == models.ObjectLegalHoldStatusEnabled {
-		lstatus = minio.LegalHoldEnabled
+		lstatus = openstor.LegalHoldEnabled
 	} else {
-		lstatus = minio.LegalHoldDisabled
+		lstatus = openstor.LegalHoldDisabled
 	}
-	return client.putObjectLegalHold(ctx, bucketName, prefix, minio.PutObjectLegalHoldOptions{VersionID: versionID, Status: &lstatus})
+	return client.putObjectLegalHold(ctx, bucketName, prefix, openstor.PutObjectLegalHoldOptions{VersionID: versionID, Status: &lstatus})
 }
 
 func getSetObjectRetentionResponse(session *models.Principal, params objectApi.PutObjectRetentionParams) *CodedAPIError {
@@ -1103,17 +1091,17 @@ func setObjectRetention(ctx context.Context, client MinioClient, bucketName, ver
 		return errors.New("object retention expires can't be nil")
 	}
 
-	var mode minio.RetentionMode
+	var mode openstor.RetentionMode
 	if *retentionOps.Mode == models.ObjectRetentionModeGovernance {
-		mode = minio.Governance
+		mode = openstor.Governance
 	} else {
-		mode = minio.Compliance
+		mode = openstor.Compliance
 	}
 	retentionUntilDate, err := time.Parse(time.RFC3339, *retentionOps.Expires)
 	if err != nil {
 		return err
 	}
-	opts := minio.PutObjectRetentionOptions{
+	opts := openstor.PutObjectRetentionOptions{
 		GovernanceBypass: retentionOps.GovernanceBypass,
 		RetainUntilDate:  &retentionUntilDate,
 		Mode:             &mode,
@@ -1139,7 +1127,7 @@ func deleteObjectRetentionResponse(session *models.Principal, params objectApi.D
 }
 
 func deleteObjectRetention(ctx context.Context, client MinioClient, bucketName, prefix, versionID string) error {
-	opts := minio.PutObjectRetentionOptions{
+	opts := openstor.PutObjectRetentionOptions{
 		GovernanceBypass: true,
 		VersionID:        versionID,
 	}
@@ -1164,7 +1152,7 @@ func getPutObjectTagsResponse(session *models.Principal, params objectApi.PutObj
 }
 
 func putObjectTags(ctx context.Context, client MinioClient, bucketName, prefix, versionID string, tagMap map[string]string) error {
-	opt := minio.PutObjectTaggingOptions{
+	opt := openstor.PutObjectTaggingOptions{
 		VersionID: versionID,
 	}
 	otags, err := tags.MapToObjectTags(tagMap)
@@ -1193,7 +1181,7 @@ func getPutObjectRestoreResponse(session *models.Principal, params objectApi.Put
 
 func restoreObject(ctx context.Context, client MinioClient, bucketName, prefix, versionID string) error {
 	// Select required version
-	srcOpts := minio.CopySrcOptions{
+	srcOpts := openstor.CopySrcOptions{
 		Bucket:    bucketName,
 		Object:    prefix,
 		VersionID: versionID,
@@ -1203,7 +1191,7 @@ func restoreObject(ctx context.Context, client MinioClient, bucketName, prefix, 
 	replaceMetadata := make(map[string]string)
 	replaceMetadata["copy-source"] = versionID
 
-	dstOpts := minio.CopyDestOptions{
+	dstOpts := openstor.CopyDestOptions{
 		Bucket:       bucketName,
 		Object:       prefix,
 		UserMetadata: replaceMetadata,
@@ -1243,10 +1231,10 @@ func getObjectMetadataResponse(session *models.Principal, params objectApi.GetOb
 	return metadata, nil
 }
 
-func getObjectInfo(ctx context.Context, client MinioClient, bucketName, prefix, versionID string) (minio.ObjectInfo, error) {
-	objectData, err := client.statObject(ctx, bucketName, prefix, minio.GetObjectOptions{VersionID: versionID})
+func getObjectInfo(ctx context.Context, client MinioClient, bucketName, prefix, versionID string) (openstor.ObjectInfo, error) {
+	objectData, err := client.statObject(ctx, bucketName, prefix, openstor.GetObjectOptions{VersionID: versionID})
 	if err != nil {
-		return minio.ObjectInfo{}, err
+		return openstor.ObjectInfo{}, err
 	}
 
 	return objectData, nil

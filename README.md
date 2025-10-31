@@ -1,8 +1,8 @@
-# MinIO Console
+# OpenStor Console
 
-![build](https://github.com/minio/console/workflows/Go/badge.svg) ![license](https://img.shields.io/badge/license-AGPL%20V3-blue)
+![build](https://github.com/openstor/console/workflows/Go/badge.svg) ![license](https://img.shields.io/badge/license-AGPL%20V3-blue)
 
-A graphical user interface for [MinIO](https://github.com/minio/minio)
+A graphical user interface for [OpenStor](https://github.com/openstor/openstor)
 
 | Object Browser                     | Dashboard                     | Creating a bucket             |
 |------------------------------------|-------------------------------|-------------------------------|
@@ -11,27 +11,26 @@ A graphical user interface for [MinIO](https://github.com/minio/minio)
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
 
-- [MinIO Console](#minio-console)
-  - [Install](#install)
-    - [Build from source](#build-from-source)
+- [OpenStor Console](#openstor-console)
   - [Setup](#setup)
     - [1. Create a user `console` using `mc`](#1-create-a-user-console-using-mc)
     - [2. Create a policy for `console` with admin access to all resources (for testing)](#2-create-a-policy-for-console-with-admin-access-to-all-resources-for-testing)
     - [3. Set the policy for the new `console` user](#3-set-the-policy-for-the-new-console-user)
   - [Start Console service:](#start-console-service)
   - [Start Console service with TLS:](#start-console-service-with-tls)
-  - [Connect Console to a Minio using TLS and a self-signed certificate](#connect-console-to-a-minio-using-tls-and-a-self-signed-certificate)
+  - [Connect Console to a OpenStor using TLS and a self-signed certificate](#connect-console-to-a-openstor-using-tls-and-a-self-signed-certificate)
+  - [Debug logging](#debug-logging)
 - [Contribute to console Project](#contribute-to-console-project)
 
 <!-- markdown-toc end -->
 
-MinIO Console is a library that provides a management and browser UI overlay for the MinIO Server.
+OpenStor Console is a library that provides a management and browser UI overlay for the OpenStor Server.
 
 ## Setup
 
-All `console` needs is a MinIO user with admin privileges and URL pointing to your MinIO deployment.
+All `console` needs is a OpenStor user with admin privileges and URL pointing to your OpenStor deployment.
 
-> Note: We don't recommend using MinIO's Operator Credentials
+> Note: We don't recommend using OpenStor's Operator Credentials
 
 ### 1. Create a user `console` using `mc`
 
@@ -180,9 +179,9 @@ Following tree structure is expected for supporting multiple domains:
 
 ```
 
-## Connect Console to a Minio using TLS and a self-signed certificate
+## Connect Console to a OpenStor using TLS and a self-signed certificate
 
-Copy the MinIO `ca.crt` under `~/.console/certs/CAs`, then:
+Copy the OpenStor `ca.crt` under `~/.console/certs/CAs`, then:
 
 ```sh
 export CONSOLE_MINIO_SERVER=https://localhost:9000
@@ -214,4 +213,4 @@ The detailed logging also includes all request and response headers (if any).
  
 # Contribute to console Project
 
-Please follow console [Contributor's Guide](https://github.com/minio/console/blob/master/CONTRIBUTING.md)
+Please follow console [Contributor's Guide](https://github.com/openstor/console/blob/master/CONTRIBUTING.md)

@@ -1,19 +1,6 @@
-// This file is part of MinIO Console Server
-// Copyright (c) 2021 MinIO, Inc.
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
+// SPDX-FileCopyrightText: 2025 openstor contributors
+// SPDX-FileCopyrightText: 2015-2025 MinIO, Inc.
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package main
 
@@ -24,10 +11,10 @@ import (
 	"time"
 
 	"github.com/minio/cli"
-	"github.com/minio/console/pkg"
-	"github.com/minio/pkg/v3/console"
-	"github.com/minio/pkg/v3/trie"
-	"github.com/minio/pkg/v3/words"
+	"github.com/openstor/console/pkg"
+	"github.com/openstor/pkg/v3/console"
+	"github.com/openstor/pkg/v3/trie"
+	"github.com/openstor/pkg/v3/words"
 )
 
 // Help template for Console.
@@ -98,9 +85,9 @@ func newApp(name string) *cli.App {
 	app.Name = name
 	app.Version = pkg.Version + " - " + pkg.ShortCommitID
 	app.Author = "MinIO, Inc."
-	app.Usage = "MinIO Console Server"
-	app.Description = `MinIO Console Server`
-	app.Copyright = "(c) 2021 MinIO, Inc."
+	app.Usage = "OpenStor Console Server"
+	app.Description = `OpenStor Console Server`
+	app.Copyright = "(c) 2021 OpenStor contributors"
 	app.Compiled, _ = time.Parse(time.RFC3339, pkg.ReleaseTime)
 	app.Commands = commands
 	app.HideHelpCommand = true // Hide `help, h` command, we already have `minio --help`.

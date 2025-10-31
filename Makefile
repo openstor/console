@@ -3,7 +3,7 @@ GOPATH := $(shell go env GOPATH)
 # Sets the build version based on the output of the following command, if we are building for a tag, that's the build else it uses the current git branch as the build
 BUILD_VERSION:=$(shell git describe --exact-match --tags $(git log -n1 --pretty='%h') 2>/dev/null || git rev-parse --abbrev-ref HEAD 2>/dev/null)
 BUILD_TIME:=$(shell date 2>/dev/null)
-TAG ?= "minio/console:$(BUILD_VERSION)-dev"
+TAG ?= "openstor/console:$(BUILD_VERSION)-dev"
 MINIO_VERSION ?= "quay.io/minio/minio:latest"
 TARGET_BUCKET ?= "target"
 NODE_VERSION := $(shell cat .nvmrc)
@@ -11,7 +11,7 @@ NODE_VERSION := $(shell cat .nvmrc)
 default: console
 
 .PHONY: console
-console:
+console: assets
 	@echo "Building Console binary to './console'"
 	@(GO111MODULE=on CGO_ENABLED=0 go build -trimpath --tags=kqueue --ldflags "-s -w" -o console ./cmd/console)
 
@@ -25,15 +25,15 @@ fmt:
 	@echo "Running $@ check"
 	@(env bash $(PWD)/verify-gofmt.sh)
 
-crosscompile:
+crosscompile: assets
 	@(env bash $(PWD)/cross-compile.sh $(arg1))
 
-lint:
+lint: assets
 	@echo "Running $@ check"
 	@GO111MODULE=on ${GOPATH}/bin/golangci-lint cache clean
 	@GO111MODULE=on ${GOPATH}/bin/golangci-lint run --timeout=5m --config ./.golangci.yml
 
-lint-fix: getdeps ## runs golangci-lint suite of linters with automatic fixes
+lint-fix: assets getdeps ## runs golangci-lint suite of linters with automatic fixes
 	@echo "Running $@ check"
 	@GO111MODULE=on ${GOPATH}/bin/golangci-lint run --timeout=5m --config ./.golangci.yml --fix
 
@@ -64,7 +64,7 @@ swagger-console:
 
 assets:
 	@(if [ -f "${NVM_DIR}/nvm.sh" ]; then \. "${NVM_DIR}/nvm.sh" && nvm install && nvm use && npm install -g yarn ; fi &&\
-	  cd web-app; corepack enable; yarn install --prefer-offline; make build-static; yarn prettier --write . --loglevel warn; cd ..)
+	  cd web-app; corepack enable; yarn install; make build-static; yarn prettier --write . --loglevel warn; cd ..)
 
 test-integration:
 	@(docker stop pgsqlcontainer || true)
@@ -256,7 +256,7 @@ cleanup-minio-nginx:
 # https://stackoverflow.com/questions/19200235/golang-tests-in-sub-directory
 # Note: go test ./... will run tests on the current folder and all subfolders.
 # This is needed because tests can be in the folder or sub-folder(s), let's include them all please!.
-test:
+test: assets
 	@echo "execute test and get coverage"
 	@(cd api && mkdir -p coverage && GO111MODULE=on go test ./... -test.v -coverprofile=coverage/coverage.out)
 
@@ -264,12 +264,12 @@ test:
 # https://stackoverflow.com/questions/19200235/golang-tests-in-sub-directory
 # Note: go test ./... will run tests on the current folder and all subfolders.
 # This is since tests in pkg folder are in subfolders and were not executed.
-test-pkg:
+test-pkg: assets
 	@echo "execute test and get coverage"
 	@(cd pkg && mkdir -p coverage && GO111MODULE=on go test ./... -test.v -coverprofile=coverage/coverage-pkg.out)
 
-coverage:
-	@(GO111MODULE=on go test -v -coverprofile=coverage.out github.com/minio/console/api/... && go tool cover -html=coverage.out && open coverage.html)
+coverage: assets
+	@(GO111MODULE=on go test -v -coverprofile=coverage.out github.com/openstor/console/api/... && go tool cover -html=coverage.out && open coverage.html)
 
 clean:
 	@echo "Cleaning up all the generated files"

@@ -1,18 +1,6 @@
-// This file is part of MinIO Console Server
-// Copyright (c) 2022 MinIO, Inc.
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// SPDX-FileCopyrightText: 2025 openstor contributors
+// SPDX-FileCopyrightText: 2015-2025 MinIO, Inc.
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package api
 
@@ -21,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	mc "github.com/minio/mc/cmd"
-	"github.com/minio/minio-go/v7"
+	mc "github.com/openstor/mc/cmd"
+	"github.com/openstor/openstor-go/v7"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -135,7 +123,7 @@ func TestWSListObjects(t *testing.T) {
 		name         string
 		wantErr      bool
 		testOptions  objectsListOpts
-		testMessages []minio.ObjectInfo
+		testMessages []openstor.ObjectInfo
 	}{
 		{
 			name:    "Get list with multiple elements",
@@ -144,7 +132,7 @@ func TestWSListObjects(t *testing.T) {
 				BucketName: "buckettest",
 				Prefix:     "/",
 			},
-			testMessages: []minio.ObjectInfo{
+			testMessages: []openstor.ObjectInfo{
 				{
 					Key:          "/file1.txt",
 					Size:         500,
@@ -169,7 +157,7 @@ func TestWSListObjects(t *testing.T) {
 				BucketName: "emptybucket",
 				Prefix:     "/",
 			},
-			testMessages: []minio.ObjectInfo{},
+			testMessages: []openstor.ObjectInfo{},
 		},
 		{
 			name:    "Get list with one element",
@@ -178,7 +166,7 @@ func TestWSListObjects(t *testing.T) {
 				BucketName: "buckettest",
 				Prefix:     "/",
 			},
-			testMessages: []minio.ObjectInfo{
+			testMessages: []openstor.ObjectInfo{
 				{
 					Key:          "/file2.txt",
 					Size:         500,
@@ -194,7 +182,7 @@ func TestWSListObjects(t *testing.T) {
 				BucketName: "buckettest",
 				Prefix:     "/path1/path2",
 			},
-			testMessages: []minio.ObjectInfo{
+			testMessages: []openstor.ObjectInfo{
 				{
 					Key:          "/path1/path2/file1.txt",
 					Size:         500,
@@ -210,8 +198,8 @@ func TestWSListObjects(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
-			minioListObjectsMock = func(_ context.Context, _ string, _ minio.ListObjectsOptions) <-chan minio.ObjectInfo {
-				ch := make(chan minio.ObjectInfo)
+			minioListObjectsMock = func(_ context.Context, _ string, _ openstor.ListObjectsOptions) <-chan openstor.ObjectInfo {
+				ch := make(chan openstor.ObjectInfo)
 				go func() {
 					defer close(ch)
 					for _, m := range tt.testMessages {

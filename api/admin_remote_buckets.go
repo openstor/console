@@ -1,18 +1,6 @@
-// This file is part of MinIO Console Server
-// Copyright (c) 2021 MinIO, Inc.
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// SPDX-FileCopyrightText: 2025 openstor contributors
+// SPDX-FileCopyrightText: 2015-2025 MinIO, Inc.
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package api
 
@@ -24,16 +12,16 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/minio/console/pkg/utils"
+	"github.com/openstor/console/pkg/utils"
 
-	"github.com/minio/madmin-go/v3"
+	"github.com/openstor/madmin-go/v4"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	"github.com/minio/console/api/operations"
-	bucketApi "github.com/minio/console/api/operations/bucket"
-	"github.com/minio/console/models"
-	"github.com/minio/minio-go/v7/pkg/replication"
+	"github.com/openstor/console/api/operations"
+	bucketApi "github.com/openstor/console/api/operations/bucket"
+	"github.com/openstor/console/models"
+	"github.com/openstor/openstor-go/v7/pkg/replication"
 )
 
 type RemoteBucketResult struct {

@@ -59,7 +59,7 @@ Bug Fix:
 
 Additional Changes:
 
-- Added debug logging for console HTTP request (see [PR #3440](https://github.com/minio/console/pull/3440) for more detailed information)
+- Added debug logging for console HTTP request (see [PR #3440](https://github.com/openstor/console/pull/3440) for more detailed information)
 
 ## Release v1.7.0
 
@@ -436,7 +436,7 @@ Bug Fix:
 
 Features:
 
-- Added MinIO Console Help Menu
+- Added OpenStor Console Help Menu
 - Updated UI Menu components
 
 Bug Fix:

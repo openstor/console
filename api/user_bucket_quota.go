@@ -1,18 +1,6 @@
-// This file is part of MinIO Console Server
-// Copyright (c) 2021 MinIO, Inc.
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// SPDX-FileCopyrightText: 2025 openstor contributors
+// SPDX-FileCopyrightText: 2015-2025 MinIO, Inc.
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package api
 
@@ -22,12 +10,12 @@ import (
 	"fmt"
 
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/minio/console/api/operations"
-	bucektApi "github.com/minio/console/api/operations/bucket"
+	"github.com/openstor/console/api/operations"
+	bucektApi "github.com/openstor/console/api/operations/bucket"
 
-	"github.com/minio/madmin-go/v3"
+	"github.com/openstor/madmin-go/v4"
 
-	"github.com/minio/console/models"
+	"github.com/openstor/console/models"
 )
 
 func registerBucketQuotaHandlers(api *operations.ConsoleAPI) {
@@ -79,8 +67,8 @@ func setBucketQuota(ctx context.Context, ac *AdminClient, bucket *string, bucket
 			return fmt.Errorf("unsupported quota type %s", bucketQuota.QuotaType)
 		}
 		if err := ac.setBucketQuota(ctx, *bucket, &madmin.BucketQuota{
-			Quota: uint64(bucketQuota.Amount),
-			Type:  quotaType,
+			Size: uint64(bucketQuota.Amount),
+			Type: quotaType,
 		}); err != nil {
 			return err
 		}
@@ -116,7 +104,7 @@ func getBucketQuota(ctx context.Context, ac *AdminClient, bucket *string) (*mode
 		return nil, err
 	}
 	return &models.BucketQuota{
-		Quota: int64(quota.Quota),
+		Quota: int64(quota.Size),
 		Type:  string(quota.Type),
 	}, nil
 }

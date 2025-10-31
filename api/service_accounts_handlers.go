@@ -1,18 +1,6 @@
-// This file is part of MinIO Console Server
-// Copyright (c) 2021 MinIO, Inc.
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// SPDX-FileCopyrightText: 2025 openstor contributors
+// SPDX-FileCopyrightText: 2015-2025 MinIO, Inc.
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package api
 
@@ -23,12 +11,12 @@ import (
 	"time"
 
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/minio/console/api/operations"
-	saApi "github.com/minio/console/api/operations/service_account"
-	userApi "github.com/minio/console/api/operations/user"
-	"github.com/minio/console/models"
-	"github.com/minio/madmin-go/v3"
-	iampolicy "github.com/minio/pkg/v3/policy"
+	"github.com/openstor/console/api/operations"
+	saApi "github.com/openstor/console/api/operations/service_account"
+	userApi "github.com/openstor/console/api/operations/user"
+	"github.com/openstor/console/models"
+	"github.com/openstor/madmin-go/v4"
+	iampolicy "github.com/openstor/pkg/v3/policy"
 )
 
 func registerServiceAccountsHandlers(api *operations.ConsoleAPI) {
@@ -119,8 +107,8 @@ func registerServiceAccountsHandlers(api *operations.ConsoleAPI) {
 }
 
 // createServiceAccount adds a service account to the userClient and assigns a policy to him if defined.
-func createServiceAccount(ctx context.Context, userClient MinioAdmin, policy string, name string, description string, expiry *time.Time, comment string) (*models.ServiceAccountCreds, error) {
-	creds, err := userClient.addServiceAccount(ctx, policy, "", "", "", name, description, expiry, comment)
+func createServiceAccount(ctx context.Context, userClient MinioAdmin, policy string, name string, description string, expiry *time.Time) (*models.ServiceAccountCreds, error) {
+	creds, err := userClient.addServiceAccount(ctx, policy, "", "", "", name, description, expiry)
 	if err != nil {
 		return nil, err
 	}
@@ -129,8 +117,8 @@ func createServiceAccount(ctx context.Context, userClient MinioAdmin, policy str
 
 // createServiceAccount adds a service account with the given credentials to the
 // userClient and assigns a policy to him if defined.
-func createServiceAccountCreds(ctx context.Context, userClient MinioAdmin, policy string, accessKey string, secretKey string, name string, description string, expiry *time.Time, comment string) (*models.ServiceAccountCreds, error) {
-	creds, err := userClient.addServiceAccount(ctx, policy, "", accessKey, secretKey, name, description, expiry, comment)
+func createServiceAccountCreds(ctx context.Context, userClient MinioAdmin, policy string, accessKey string, secretKey string, name string, description string, expiry *time.Time) (*models.ServiceAccountCreds, error) {
+	creds, err := userClient.addServiceAccount(ctx, policy, "", accessKey, secretKey, name, description, expiry)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +148,7 @@ func getCreateServiceAccountResponse(session *models.Principal, params saApi.Cre
 		}
 		expiry = &parsedExpiry
 	}
-	saCreds, err := createServiceAccount(ctx, userAdminClient, params.Body.Policy, params.Body.Name, params.Body.Description, expiry, params.Body.Comment)
+	saCreds, err := createServiceAccount(ctx, userAdminClient, params.Body.Policy, params.Body.Name, params.Body.Description, expiry)
 	if err != nil {
 		return nil, ErrorWithContext(ctx, err)
 	}
@@ -168,8 +156,8 @@ func getCreateServiceAccountResponse(session *models.Principal, params saApi.Cre
 }
 
 // createServiceAccount adds a service account to a given user and assigns a policy to him if defined.
-func createAUserServiceAccount(ctx context.Context, userClient MinioAdmin, policy string, user string, name string, description string, expiry *time.Time, comment string) (*models.ServiceAccountCreds, error) {
-	creds, err := userClient.addServiceAccount(ctx, policy, user, "", "", name, description, expiry, comment)
+func createAUserServiceAccount(ctx context.Context, userClient MinioAdmin, policy string, user string, name string, description string, expiry *time.Time) (*models.ServiceAccountCreds, error) {
+	creds, err := userClient.addServiceAccount(ctx, policy, user, "", "", name, description, expiry)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +165,7 @@ func createAUserServiceAccount(ctx context.Context, userClient MinioAdmin, polic
 }
 
 func createAUserServiceAccountCreds(ctx context.Context, userClient MinioAdmin, policy string, user string, accessKey string, secretKey string, name string, description string, expiry *time.Time, comment string) (*models.ServiceAccountCreds, error) {
-	creds, err := userClient.addServiceAccount(ctx, policy, user, accessKey, secretKey, name, description, expiry, comment)
+	creds, err := userClient.addServiceAccount(ctx, policy, user, accessKey, secretKey, name, description, expiry)
 	if err != nil {
 		return nil, err
 	}
@@ -207,7 +195,7 @@ func getCreateAUserServiceAccountResponse(session *models.Principal, params user
 		}
 		expiry = &parsedExpiry
 	}
-	saCreds, err := createAUserServiceAccount(ctx, userAdminClient, params.Body.Policy, params.Name, params.Body.Name, params.Body.Description, expiry, params.Body.Comment)
+	saCreds, err := createAUserServiceAccount(ctx, userAdminClient, params.Body.Policy, params.Name, params.Body.Name, params.Body.Description, expiry)
 	if err != nil {
 		return nil, ErrorWithContext(ctx, err)
 	}
@@ -292,7 +280,7 @@ func getCreateServiceAccountCredsResponse(session *models.Principal, params saAp
 		expiry = &parsedExpiry
 	}
 
-	saCreds, err := createServiceAccountCreds(ctx, userAdminClient, serviceAccount.Policy, serviceAccount.AccessKey, serviceAccount.SecretKey, params.Body.Name, params.Body.Description, expiry, params.Body.Comment)
+	saCreds, err := createServiceAccountCreds(ctx, userAdminClient, serviceAccount.Policy, serviceAccount.AccessKey, serviceAccount.SecretKey, params.Body.Name, params.Body.Description, expiry)
 	if err != nil {
 		return nil, ErrorWithContext(ctx, err)
 	}

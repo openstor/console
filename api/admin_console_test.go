@@ -1,18 +1,6 @@
-// This file is part of MinIO Console Server
-// Copyright (c) 2021 MinIO, Inc.
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// SPDX-FileCopyrightText: 2025 openstor contributors
+// SPDX-FileCopyrightText: 2015-2025 MinIO, Inc.
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package api
 
@@ -22,7 +10,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/minio/madmin-go/v3"
+	"github.com/openstor/madmin-go/v4"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -48,9 +36,8 @@ func TestAdminConsoleLog(t *testing.T) {
 			lines := make([]int, testStreamSize)
 			// mocking sending 5 lines of info
 			for range lines {
-				info := madmin.LogInfo{
-					ConsoleMsg: textToReceive,
-				}
+				info := madmin.LogInfo{}
+				info.Message = textToReceive
 				ch <- info
 			}
 		}(ch)
@@ -78,7 +65,7 @@ func TestAdminConsoleLog(t *testing.T) {
 	}
 	// check that the TestReceiver got the same number of data from Console.
 	for i := range testReceiver {
-		assert.Equal(textToReceive, i.ConsoleMsg)
+		assert.Equal(textToReceive, i.Message)
 	}
 
 	// Test-2: if error happens while writing, return error
@@ -99,9 +86,8 @@ func TestAdminConsoleLog(t *testing.T) {
 			lines := make([]int, 2)
 			// mocking sending 5 lines of info
 			for range lines {
-				info := madmin.LogInfo{
-					ConsoleMsg: textToReceive,
-				}
+				info := madmin.LogInfo{}
+				info.Message = textToReceive
 				ch <- info
 			}
 			ch <- madmin.LogInfo{Err: fmt.Errorf("error on Console")}

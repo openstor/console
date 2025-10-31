@@ -2,13 +2,12 @@
 
 ## Supported Versions
 
-We always provide security updates for the [latest release](https://github.com/minio/console/releases/latest).
+We always provide security updates for the [latest release](https://github.com/openstor/console/releases/latest).
 Whenever there is a security update you just need to upgrade to the latest version.
 
 ## Reporting a Vulnerability
 
-All security bugs in [minio/console](https://github,com/minio/console) (or other minio/* repositories)
-should be reported by email to security@min.io. Your email will be acknowledged within 48 hours,
+All security bugs in [openstor/console](https://github.com/openstor/console) should be reported by email to security@min.io. Your email will be acknowledged within 48 hours,
 and you'll receive a more detailed response to your email within 72 hours indicating the next steps
 in handling your report.
 
@@ -25,7 +24,7 @@ for the past five days please contact the security team directly:
 
 ### Disclosure Process
 
-MinIO Console uses the following disclosure process:
+OpenStor Console uses the following disclosure process:
 
 1. Once the security report is received one member of the security team tries to verify and reproduce
    the issue and determines the impact it has.
@@ -34,8 +33,8 @@ MinIO Console uses the following disclosure process:
 3. Code is audited to find any potential similar problems.
 4. Fixes are prepared for the latest release.
 5. On the date that the fixes are applied a security advisory will be published on https://blog.min.io.
-   Please inform us in your report email whether MinIO Console should mention your contribution w.r.t. fixing
-   the security issue. By default MinIO Console will **not** publish this information to protect your privacy.
+   Please inform us in your report email whether OpenStor Console should mention your contribution w.r.t. fixing
+   the security issue. By default OpenStor Console will **not** publish this information to protect your privacy.
 
 This process can take some time, especially when coordination is required with maintainers of other projects.
 Every effort will be made to handle the bug in as timely a manner as possible, however it's important that we

@@ -11785,9 +11785,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mds@https://github.com/minio/mds.git#v1.0.4":
+"mds@https://github.com/openstor/mds.git#d8a7091df327ebd06be08d32d18dae7264f94018":
   version: 1.0.4
-  resolution: "mds@https://github.com/minio/mds.git#commit=027fb7f9834e2bd6daba7f62a9d04d9a3606fbe1"
+  resolution: "mds@https://github.com/openstor/mds.git#commit=d8a7091df327ebd06be08d32d18dae7264f94018"
   dependencies:
     "@storybook/test": "npm:^8.2.4"
     "@types/styled-components": "npm:^5.1.34"
@@ -17624,11 +17624,11 @@ __metadata:
 
 "typescript@patch:typescript@npm%3A^5.5.3#optional!builtin<compat/typescript>":
   version: 5.6.3
-  resolution: "typescript@patch:typescript@npm%3A5.6.3#optional!builtin<compat/typescript>::version=5.6.3&hash=74658d"
+  resolution: "typescript@patch:typescript@npm%3A5.6.3#optional!builtin<compat/typescript>::version=5.6.3&hash=8c6c40"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 10c0/ac8307bb06bbfd08ae7137da740769b7d8c3ee5943188743bb622c621f8ad61d244767480f90fbd840277fbf152d8932aa20c33f867dea1bb5e79b187ca1a92f
+  checksum: 10c0/7c9d2e07c81226d60435939618c91ec2ff0b75fbfa106eec3430f0fcf93a584bc6c73176676f532d78c3594fe28a54b36eb40b3d75593071a7ec91301533ace7
   languageName: node
   linkType: hard
 
@@ -18222,7 +18222,7 @@ __metadata:
     local-storage-fallback: "npm:^4.1.2"
     lodash: "npm:^4.17.21"
     luxon: "npm:^3.4.4"
-    mds: "https://github.com/minio/mds.git#v1.0.4"
+    mds: "https://github.com/openstor/mds.git#d8a7091df327ebd06be08d32d18dae7264f94018"
     minio: "npm:^8.0.1"
     nyc: "npm:^15.1.0"
     prettier: "npm:3.3.3"

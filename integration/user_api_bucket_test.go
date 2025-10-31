@@ -1,20 +1,6 @@
-// This file is part of MinIO Console Server
-// Copyright (c) 2021 MinIO, Inc.
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-// These tests are for UserAPI Tag based on swagger-console.yml
+// SPDX-FileCopyrightText: 2025 openstor contributors
+// SPDX-FileCopyrightText: 2015-2025 MinIO, Inc.
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package integration
 
@@ -34,10 +20,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/minio/minio-go/v7"
-
-	"github.com/minio/console/models"
-	"github.com/minio/minio-go/v7/pkg/credentials"
+	"github.com/openstor/console/models"
+	"github.com/openstor/openstor-go/v7"
+	"github.com/openstor/openstor-go/v7/pkg/credentials"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -2107,7 +2092,7 @@ func TestDeleteBucket(t *testing.T) {
 	}
 
 	// Initialize minio client object.
-	minioClient, err := minio.New("localhost:9000", &minio.Options{
+	minioClient, err := openstor.New("localhost:9000", &openstor.Options{
 		Creds:  credentials.NewStaticV4("minioadmin", "minioadmin", ""),
 		Secure: false,
 	})
@@ -2119,7 +2104,7 @@ func TestDeleteBucket(t *testing.T) {
 		t.Run(tt.name, func(_ *testing.T) {
 			// Create bucket if needed for the test
 			if tt.args.createBucketName != "" {
-				if err := minioClient.MakeBucket(context.Background(), tt.args.createBucketName, minio.MakeBucketOptions{}); err != nil {
+				if err := minioClient.MakeBucket(context.Background(), tt.args.createBucketName, openstor.MakeBucketOptions{}); err != nil {
 					assert.Failf("Failed to create bucket", "Could not create bucket %s: %v", tt.args.createBucketName, err)
 				}
 			}

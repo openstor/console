@@ -1,18 +1,6 @@
-// This file is part of MinIO Console Server
-// Copyright (c) 2021 MinIO, Inc.
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// SPDX-FileCopyrightText: 2025 openstor contributors
+// SPDX-FileCopyrightText: 2015-2025 MinIO, Inc.
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package api
 
@@ -25,21 +13,21 @@ import (
 	"testing"
 	"time"
 
-	"github.com/minio/console/pkg/auth/token"
-	"github.com/minio/console/pkg/utils"
+	"github.com/openstor/console/pkg/auth/token"
+	"github.com/openstor/console/pkg/utils"
 
 	"github.com/go-openapi/swag"
-	"github.com/minio/console/models"
-	"github.com/minio/madmin-go/v3"
-	"github.com/minio/mc/pkg/probe"
-	"github.com/minio/minio-go/v7"
-	"github.com/minio/minio-go/v7/pkg/sse"
-	"github.com/minio/minio-go/v7/pkg/tags"
+	"github.com/openstor/console/models"
+	"github.com/openstor/madmin-go/v4"
+	"github.com/openstor/mc/pkg/probe"
+	"github.com/openstor/openstor-go/v7"
+	"github.com/openstor/openstor-go/v7/pkg/sse"
+	"github.com/openstor/openstor-go/v7/pkg/tags"
 	"github.com/stretchr/testify/assert"
 )
 
 // assigning mock at runtime instead of compile time
-var minioListBucketsWithContextMock func(ctx context.Context) ([]minio.BucketInfo, error)
+var minioListBucketsWithContextMock func(ctx context.Context) ([]openstor.BucketInfo, error)
 
 var (
 	minioMakeBucketWithContextMock      func(ctx context.Context, bucketName, location string, objectLock bool) error
@@ -49,11 +37,11 @@ var (
 	minioSetBucketEncryptionMock        func(ctx context.Context, bucketName string, config *sse.Configuration) error
 	minioRemoveBucketEncryptionMock     func(ctx context.Context, bucketName string) error
 	minioGetBucketEncryptionMock        func(ctx context.Context, bucketName string) (*sse.Configuration, error)
-	minioSetObjectLockConfigMock        func(ctx context.Context, bucketName string, mode *minio.RetentionMode, validity *uint, unit *minio.ValidityUnit) error
-	minioGetBucketObjectLockConfigMock  func(ctx context.Context, bucketName string) (mode *minio.RetentionMode, validity *uint, unit *minio.ValidityUnit, err error)
-	minioGetObjectLockConfigMock        func(ctx context.Context, bucketName string) (lock string, mode *minio.RetentionMode, validity *uint, unit *minio.ValidityUnit, err error)
+	minioSetObjectLockConfigMock        func(ctx context.Context, bucketName string, mode *openstor.RetentionMode, validity *uint, unit *openstor.ValidityUnit) error
+	minioGetBucketObjectLockConfigMock  func(ctx context.Context, bucketName string) (mode *openstor.RetentionMode, validity *uint, unit *openstor.ValidityUnit, err error)
+	minioGetObjectLockConfigMock        func(ctx context.Context, bucketName string) (lock string, mode *openstor.RetentionMode, validity *uint, unit *openstor.ValidityUnit, err error)
 	minioSetVersioningMock              func(ctx context.Context, state string, excludePrefix []string, excludeFolders bool) *probe.Error
-	minioCopyObjectMock                 func(ctx context.Context, dst minio.CopyDestOptions, src minio.CopySrcOptions) (minio.UploadInfo, error)
+	minioCopyObjectMock                 func(ctx context.Context, dst openstor.CopyDestOptions, src openstor.CopySrcOptions) (openstor.UploadInfo, error)
 	minioSetBucketTaggingMock           func(ctx context.Context, bucketName string, tags *tags.Tags) error
 	minioRemoveBucketTaggingMock        func(ctx context.Context, bucketName string) error
 )
@@ -62,7 +50,7 @@ var (
 type minioClientMock struct{}
 
 // mock function of listBucketsWithContext()
-func (mc minioClientMock) listBucketsWithContext(ctx context.Context) ([]minio.BucketInfo, error) {
+func (mc minioClientMock) listBucketsWithContext(ctx context.Context) ([]openstor.BucketInfo, error) {
 	return minioListBucketsWithContextMock(ctx)
 }
 
@@ -98,19 +86,19 @@ func (mc minioClientMock) getBucketEncryption(ctx context.Context, bucketName st
 	return minioGetBucketEncryptionMock(ctx, bucketName)
 }
 
-func (mc minioClientMock) setObjectLockConfig(ctx context.Context, bucketName string, mode *minio.RetentionMode, validity *uint, unit *minio.ValidityUnit) error {
+func (mc minioClientMock) setObjectLockConfig(ctx context.Context, bucketName string, mode *openstor.RetentionMode, validity *uint, unit *openstor.ValidityUnit) error {
 	return minioSetObjectLockConfigMock(ctx, bucketName, mode, validity, unit)
 }
 
-func (mc minioClientMock) getBucketObjectLockConfig(ctx context.Context, bucketName string) (mode *minio.RetentionMode, validity *uint, unit *minio.ValidityUnit, err error) {
+func (mc minioClientMock) getBucketObjectLockConfig(ctx context.Context, bucketName string) (mode *openstor.RetentionMode, validity *uint, unit *openstor.ValidityUnit, err error) {
 	return minioGetBucketObjectLockConfigMock(ctx, bucketName)
 }
 
-func (mc minioClientMock) getObjectLockConfig(ctx context.Context, bucketName string) (lock string, mode *minio.RetentionMode, validity *uint, unit *minio.ValidityUnit, err error) {
+func (mc minioClientMock) getObjectLockConfig(ctx context.Context, bucketName string) (lock string, mode *openstor.RetentionMode, validity *uint, unit *openstor.ValidityUnit, err error) {
 	return minioGetObjectLockConfigMock(ctx, bucketName)
 }
 
-func (mc minioClientMock) copyObject(ctx context.Context, dst minio.CopyDestOptions, src minio.CopySrcOptions) (minio.UploadInfo, error) {
+func (mc minioClientMock) copyObject(ctx context.Context, dst openstor.CopyDestOptions, src openstor.CopySrcOptions) (openstor.UploadInfo, error) {
 	return minioCopyObjectMock(ctx, dst, src)
 }
 
@@ -559,7 +547,7 @@ func Test_SetBucketRetentionConfig(t *testing.T) {
 		mode                    models.ObjectRetentionMode
 		unit                    models.ObjectRetentionUnit
 		validity                *int32
-		mockBucketRetentionFunc func(ctx context.Context, bucketName string, mode *minio.RetentionMode, validity *uint, unit *minio.ValidityUnit) error
+		mockBucketRetentionFunc func(ctx context.Context, bucketName string, mode *openstor.RetentionMode, validity *uint, unit *openstor.ValidityUnit) error
 	}
 	tests := []struct {
 		name          string
@@ -575,7 +563,7 @@ func Test_SetBucketRetentionConfig(t *testing.T) {
 				mode:       models.ObjectRetentionModeCompliance,
 				unit:       models.ObjectRetentionUnitDays,
 				validity:   swag.Int32(2),
-				mockBucketRetentionFunc: func(_ context.Context, _ string, _ *minio.RetentionMode, _ *uint, _ *minio.ValidityUnit) error {
+				mockBucketRetentionFunc: func(_ context.Context, _ string, _ *openstor.RetentionMode, _ *uint, _ *openstor.ValidityUnit) error {
 					return nil
 				},
 			},
@@ -590,7 +578,7 @@ func Test_SetBucketRetentionConfig(t *testing.T) {
 				mode:       models.ObjectRetentionModeGovernance,
 				unit:       models.ObjectRetentionUnitYears,
 				validity:   swag.Int32(2),
-				mockBucketRetentionFunc: func(_ context.Context, _ string, _ *minio.RetentionMode, _ *uint, _ *minio.ValidityUnit) error {
+				mockBucketRetentionFunc: func(_ context.Context, _ string, _ *openstor.RetentionMode, _ *uint, _ *openstor.ValidityUnit) error {
 					return nil
 				},
 			},
@@ -605,7 +593,7 @@ func Test_SetBucketRetentionConfig(t *testing.T) {
 				mode:       models.ObjectRetentionModeCompliance,
 				unit:       models.ObjectRetentionUnitDays,
 				validity:   nil,
-				mockBucketRetentionFunc: func(_ context.Context, _ string, _ *minio.RetentionMode, _ *uint, _ *minio.ValidityUnit) error {
+				mockBucketRetentionFunc: func(_ context.Context, _ string, _ *openstor.RetentionMode, _ *uint, _ *openstor.ValidityUnit) error {
 					return nil
 				},
 			},
@@ -620,7 +608,7 @@ func Test_SetBucketRetentionConfig(t *testing.T) {
 				mode:       models.ObjectRetentionMode("othermode"),
 				unit:       models.ObjectRetentionUnitDays,
 				validity:   swag.Int32(2),
-				mockBucketRetentionFunc: func(_ context.Context, _ string, _ *minio.RetentionMode, _ *uint, _ *minio.ValidityUnit) error {
+				mockBucketRetentionFunc: func(_ context.Context, _ string, _ *openstor.RetentionMode, _ *uint, _ *openstor.ValidityUnit) error {
 					return nil
 				},
 			},
@@ -635,7 +623,7 @@ func Test_SetBucketRetentionConfig(t *testing.T) {
 				mode:       models.ObjectRetentionModeCompliance,
 				unit:       models.ObjectRetentionUnit("otherunit"),
 				validity:   swag.Int32(2),
-				mockBucketRetentionFunc: func(_ context.Context, _ string, _ *minio.RetentionMode, _ *uint, _ *minio.ValidityUnit) error {
+				mockBucketRetentionFunc: func(_ context.Context, _ string, _ *openstor.RetentionMode, _ *uint, _ *openstor.ValidityUnit) error {
 					return nil
 				},
 			},
@@ -650,7 +638,7 @@ func Test_SetBucketRetentionConfig(t *testing.T) {
 				mode:       models.ObjectRetentionModeCompliance,
 				unit:       models.ObjectRetentionUnitDays,
 				validity:   swag.Int32(2),
-				mockBucketRetentionFunc: func(_ context.Context, _ string, _ *minio.RetentionMode, _ *uint, _ *minio.ValidityUnit) error {
+				mockBucketRetentionFunc: func(_ context.Context, _ string, _ *openstor.RetentionMode, _ *uint, _ *openstor.ValidityUnit) error {
 					return errors.New("error func")
 				},
 			},
@@ -679,7 +667,7 @@ func Test_GetBucketRetentionConfig(t *testing.T) {
 		ctx              context.Context
 		client           MinioClient
 		bucketName       string
-		getRetentionFunc func(ctx context.Context, bucketName string) (mode *minio.RetentionMode, validity *uint, unit *minio.ValidityUnit, err error)
+		getRetentionFunc func(ctx context.Context, bucketName string) (mode *openstor.RetentionMode, validity *uint, unit *openstor.ValidityUnit, err error)
 	}
 	tests := []struct {
 		name             string
@@ -693,9 +681,9 @@ func Test_GetBucketRetentionConfig(t *testing.T) {
 				ctx:        ctx,
 				client:     minClient,
 				bucketName: "test",
-				getRetentionFunc: func(_ context.Context, _ string) (mode *minio.RetentionMode, validity *uint, unit *minio.ValidityUnit, err error) {
-					m := minio.Governance
-					u := minio.Days
+				getRetentionFunc: func(_ context.Context, _ string) (mode *openstor.RetentionMode, validity *uint, unit *openstor.ValidityUnit, err error) {
+					m := openstor.Governance
+					u := openstor.Days
 					return &m, swag.Uint(2), &u, nil
 				},
 			},
@@ -712,9 +700,9 @@ func Test_GetBucketRetentionConfig(t *testing.T) {
 				ctx:        ctx,
 				client:     minClient,
 				bucketName: "test",
-				getRetentionFunc: func(_ context.Context, _ string) (mode *minio.RetentionMode, validity *uint, unit *minio.ValidityUnit, err error) {
-					m := minio.Compliance
-					u := minio.Days
+				getRetentionFunc: func(_ context.Context, _ string) (mode *openstor.RetentionMode, validity *uint, unit *openstor.ValidityUnit, err error) {
+					m := openstor.Compliance
+					u := openstor.Days
 					return &m, swag.Uint(2), &u, nil
 				},
 			},
@@ -731,7 +719,7 @@ func Test_GetBucketRetentionConfig(t *testing.T) {
 				ctx:        ctx,
 				client:     minClient,
 				bucketName: "test",
-				getRetentionFunc: func(_ context.Context, _ string) (mode *minio.RetentionMode, validity *uint, unit *minio.ValidityUnit, err error) {
+				getRetentionFunc: func(_ context.Context, _ string) (mode *openstor.RetentionMode, validity *uint, unit *openstor.ValidityUnit, err error) {
 					return nil, nil, nil, errors.New("error func")
 				},
 			},
@@ -746,8 +734,8 @@ func Test_GetBucketRetentionConfig(t *testing.T) {
 				ctx:        ctx,
 				client:     minClient,
 				bucketName: "test",
-				getRetentionFunc: func(_ context.Context, _ string) (mode *minio.RetentionMode, validity *uint, unit *minio.ValidityUnit, err error) {
-					return nil, nil, nil, minio.ErrorResponse{
+				getRetentionFunc: func(_ context.Context, _ string) (mode *openstor.RetentionMode, validity *uint, unit *openstor.ValidityUnit, err error) {
+					return nil, nil, nil, openstor.ErrorResponse{
 						Code:    "ObjectLockConfigurationNotFoundError",
 						Message: "Object Lock configuration does not exist for this bucket",
 					}
@@ -762,9 +750,9 @@ func Test_GetBucketRetentionConfig(t *testing.T) {
 				ctx:        ctx,
 				client:     minClient,
 				bucketName: "test",
-				getRetentionFunc: func(_ context.Context, _ string) (mode *minio.RetentionMode, validity *uint, unit *minio.ValidityUnit, err error) {
-					m := minio.RetentionMode("other")
-					u := minio.Days
+				getRetentionFunc: func(_ context.Context, _ string) (mode *openstor.RetentionMode, validity *uint, unit *openstor.ValidityUnit, err error) {
+					m := openstor.RetentionMode("other")
+					u := openstor.Days
 					return &m, swag.Uint(2), &u, nil
 				},
 			},
@@ -777,9 +765,9 @@ func Test_GetBucketRetentionConfig(t *testing.T) {
 				ctx:        ctx,
 				client:     minClient,
 				bucketName: "test",
-				getRetentionFunc: func(_ context.Context, _ string) (mode *minio.RetentionMode, validity *uint, unit *minio.ValidityUnit, err error) {
-					m := minio.Governance
-					u := minio.ValidityUnit("otherUnit")
+				getRetentionFunc: func(_ context.Context, _ string) (mode *openstor.RetentionMode, validity *uint, unit *openstor.ValidityUnit, err error) {
+					m := openstor.Governance
+					u := openstor.ValidityUnit("otherUnit")
 					return &m, swag.Uint(2), &u, nil
 				},
 			},
@@ -1129,8 +1117,8 @@ func Test_getAccountBuckets(t *testing.T) {
 								Replication:         false,
 								Tagging:             nil,
 								Quota: &madmin.BucketQuota{
-									Quota: 10,
-									Type:  madmin.HardQuota,
+									Size: 10,
+									Type: madmin.HardQuota,
 								},
 							},
 						},

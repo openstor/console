@@ -1,18 +1,6 @@
-// This file is part of MinIO Console Server
-// Copyright (c) 2021 MinIO, Inc.
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// SPDX-FileCopyrightText: 2025 openstor contributors
+// SPDX-FileCopyrightText: 2015-2025 MinIO, Inc.
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package api
 
@@ -28,17 +16,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/minio/console/pkg"
+	"github.com/openstor/console/pkg"
 
-	"github.com/minio/console/pkg/utils"
+	"github.com/openstor/console/pkg/utils"
 
-	"github.com/minio/console/models"
-	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio-go/v7/pkg/credentials"
-	iampolicy "github.com/minio/pkg/v3/policy"
+	"github.com/openstor/console/models"
+	"github.com/openstor/madmin-go/v4"
+	"github.com/openstor/openstor-go/v7/pkg/credentials"
+	iampolicy "github.com/openstor/pkg/v3/policy"
 )
 
-const globalAppName = "MinIO Console"
+const globalAppName = "OpenStor Console"
 
 // MinioAdmin interface with all functions to be implemented
 // by mock when testing, it should include all MinioAdmin respective api calls
@@ -72,7 +60,7 @@ type MinioAdmin interface {
 	heal(ctx context.Context, bucket, prefix string, healOpts madmin.HealOpts, clientToken string,
 		forceStart, forceStop bool) (healStart madmin.HealStartSuccess, healTaskStatus madmin.HealTaskStatus, err error)
 	// Service Accounts
-	addServiceAccount(ctx context.Context, policy string, user string, accessKey string, secretKey string, name string, description string, expiry *time.Time, comment string) (madmin.Credentials, error)
+	addServiceAccount(ctx context.Context, policy string, user string, accessKey string, secretKey string, name string, description string, expiry *time.Time) (madmin.Credentials, error)
 	listServiceAccounts(ctx context.Context, user string) (madmin.ListServiceAccountsResp, error)
 	deleteServiceAccount(ctx context.Context, serviceAccount string) error
 	infoServiceAccount(ctx context.Context, serviceAccount string) (madmin.InfoServiceAccountResp, error)
@@ -203,7 +191,7 @@ func (ac AdminClient) listPolicies(ctx context.Context) (map[string]*iampolicy.P
 
 // implements madmin.ListCannedPolicies()
 func (ac AdminClient) getPolicy(ctx context.Context, name string) (*iampolicy.Policy, error) {
-	info, err := ac.Client.InfoCannedPolicyV2(ctx, name)
+	info, err := ac.Client.InfoCannedPolicy(ctx, name)
 	if err != nil {
 		return nil, err
 	}
@@ -226,8 +214,21 @@ func (ac AdminClient) addPolicy(ctx context.Context, name string, policy *iampol
 
 // implements madmin.SetPolicy()
 func (ac AdminClient) setPolicy(ctx context.Context, policyName, entityName string, isGroup bool) error {
-	// nolint:staticcheck // ignore SA1019
-	return ac.Client.SetPolicy(ctx, policyName, entityName, isGroup)
+	var policyAssociationReq madmin.PolicyAssociationReq
+
+	if isGroup {
+		policyAssociationReq = madmin.PolicyAssociationReq{
+			Policies: []string{policyName},
+			Group:    entityName,
+		}
+	} else {
+		policyAssociationReq = madmin.PolicyAssociationReq{
+			Policies: []string{policyName},
+			User:     entityName,
+		}
+	}
+	_, err := ac.Client.AttachPolicy(ctx, policyAssociationReq)
+	return err
 }
 
 // implements madmin.GetConfigKV()
@@ -258,7 +259,7 @@ func (ac AdminClient) delConfigKV(ctx context.Context, kv string) (err error) {
 
 // implements madmin.ServiceRestart()
 func (ac AdminClient) serviceRestart(ctx context.Context) (err error) {
-	return ac.Client.ServiceRestartV2(ctx)
+	return ac.Client.ServiceRestart(ctx)
 }
 
 // implements madmin.ServerInfo()
@@ -293,7 +294,7 @@ func (ac AdminClient) getLogs(ctx context.Context, node string, lineCnt int, log
 }
 
 // implements madmin.AddServiceAccount()
-func (ac AdminClient) addServiceAccount(ctx context.Context, policy string, user string, accessKey string, secretKey string, name string, description string, expiry *time.Time, comment string) (madmin.Credentials, error) {
+func (ac AdminClient) addServiceAccount(ctx context.Context, policy string, user string, accessKey string, secretKey string, name string, description string, expiry *time.Time) (madmin.Credentials, error) {
 	return ac.Client.AddServiceAccount(ctx, madmin.AddServiceAccountReq{
 		Policy:      []byte(policy),
 		TargetUser:  user,
@@ -302,7 +303,6 @@ func (ac AdminClient) addServiceAccount(ctx context.Context, policy string, user
 		Name:        name,
 		Description: description,
 		Expiration:  expiry,
-		Comment:     comment,
 	})
 }
 
@@ -448,14 +448,14 @@ func newAdminFromClaims(claims *models.Principal, clientIP string) (*madmin.Admi
 	endpoint := getMinIOEndpoint()
 
 	adminClient, err := madmin.NewWithOptions(endpoint, &madmin.Options{
-		Creds:  credentials.NewStaticV4(claims.STSAccessKeyID, claims.STSSecretAccessKey, claims.STSSessionToken),
-		Secure: tlsEnabled,
+		Creds:     credentials.NewStaticV4(claims.STSAccessKeyID, claims.STSSecretAccessKey, claims.STSSessionToken),
+		Secure:    tlsEnabled,
+		Transport: PrepareSTSClientTransport(clientIP),
 	})
 	if err != nil {
 		return nil, err
 	}
 	adminClient.SetAppInfo(globalAppName, pkg.Version)
-	adminClient.SetCustomTransport(PrepareSTSClientTransport(clientIP))
 	return adminClient, nil
 }
 

@@ -1,9 +1,9 @@
-# Developing MinIO Console
+# Developing OpenStor Console
 
-The MinIO Console requires the [MinIO Server](https://github.com/minio/minio). For development purposes, you also need
-to run both the MinIO Console web app and the MinIO Console server.
+The OpenStor Console requires the [MinIO Server](https://github.com/minio/minio). For development purposes, you also need
+to run both the OpenStor Console web app and the OpenStor Console server.
 
-## Running MinIO Console server
+## Running OpenStor Console server
 
 Build the server in the main folder by running:
 
@@ -23,7 +23,7 @@ CONSOLE_DEV_MODE=on
 ./console server
 ```
 
-## Running MinIO Console web app
+## Running OpenStor Console web app
 
 Refer to `/web-app` [instructions](/web-app/README.md) to run the web app locally.
 
@@ -62,7 +62,7 @@ In the MinIO repository open `go.mod` and after the first `require()` directive 
 )
 
 replace (
-github.com/minio/console => "../console"
+github.com/openstor/console => "../console"
 )
 
 require (

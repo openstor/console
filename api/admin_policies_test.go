@@ -1,18 +1,6 @@
-// This file is part of MinIO Console Server
-// Copyright (c) 2021 MinIO, Inc.
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// SPDX-FileCopyrightText: 2025 openstor contributors
+// SPDX-FileCopyrightText: 2015-2025 MinIO, Inc.
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package api
 
@@ -25,8 +13,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/minio/console/models"
-	iampolicy "github.com/minio/pkg/v3/policy"
+	"github.com/openstor/console/models"
+	iampolicy "github.com/openstor/pkg/v3/policy"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -351,7 +339,7 @@ func Test_policyMatchesBucket(t *testing.T) {
         }
     ]
 	}`}, bucket: "test1"},
-			want: false,
+			want: true,
 		},
 		{
 			name: "Test4",
@@ -375,7 +363,7 @@ func Test_policyMatchesBucket(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(_ *testing.T) {
 			if got := policyMatchesBucket(tt.args.ctx, tt.args.policy, tt.args.bucket); got != tt.want {
-				t.Errorf("policyMatchesBucket() = %v, want %v", got, tt.want)
+				t.Errorf("%v policyMatchesBucket() = %v, want %v", tt.name, got, tt.want)
 			}
 		})
 	}

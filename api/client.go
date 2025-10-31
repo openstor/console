@@ -1,18 +1,6 @@
-// This file is part of MinIO Console Server
-// Copyright (c) 2021 MinIO, Inc.
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// SPDX-FileCopyrightText: 2025 openstor contributors
+// SPDX-FileCopyrightText: 2015-2025 MinIO, Inc.
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package api
 
@@ -26,55 +14,55 @@ import (
 	"strings"
 	"time"
 
-	"github.com/minio/minio-go/v7/pkg/replication"
-	"github.com/minio/minio-go/v7/pkg/sse"
-	xnet "github.com/minio/pkg/v3/net"
+	"github.com/openstor/openstor-go/v7/pkg/replication"
+	"github.com/openstor/openstor-go/v7/pkg/sse"
+	xnet "github.com/openstor/pkg/v3/net"
 
-	"github.com/minio/console/models"
-	"github.com/minio/console/pkg"
-	"github.com/minio/console/pkg/auth"
-	"github.com/minio/console/pkg/auth/ldap"
-	xjwt "github.com/minio/console/pkg/auth/token"
-	mc "github.com/minio/mc/cmd"
-	"github.com/minio/mc/pkg/probe"
-	"github.com/minio/minio-go/v7"
-	"github.com/minio/minio-go/v7/pkg/credentials"
-	"github.com/minio/minio-go/v7/pkg/notification"
-	"github.com/minio/minio-go/v7/pkg/tags"
+	"github.com/openstor/console/models"
+	"github.com/openstor/console/pkg"
+	"github.com/openstor/console/pkg/auth"
+	"github.com/openstor/console/pkg/auth/ldap"
+	xjwt "github.com/openstor/console/pkg/auth/token"
+	mc "github.com/openstor/mc/cmd"
+	"github.com/openstor/mc/pkg/probe"
+	"github.com/openstor/openstor-go/v7"
+	"github.com/openstor/openstor-go/v7/pkg/credentials"
+	"github.com/openstor/openstor-go/v7/pkg/notification"
+	"github.com/openstor/openstor-go/v7/pkg/tags"
 )
 
 func init() {
 	// All minio-go API operations shall be performed only once,
 	// another way to look at this is we are turning off retries.
-	minio.MaxRetry = 1
+	openstor.MaxRetry = 1
 }
 
 // MinioClient interface with all functions to be implemented
 // by mock when testing, it should include all MinioClient respective api calls
 // that are used within this project.
 type MinioClient interface {
-	listBucketsWithContext(ctx context.Context) ([]minio.BucketInfo, error)
+	listBucketsWithContext(ctx context.Context) ([]openstor.BucketInfo, error)
 	makeBucketWithContext(ctx context.Context, bucketName, location string, objectLocking bool) error
 	setBucketPolicyWithContext(ctx context.Context, bucketName, policy string) error
 	removeBucket(ctx context.Context, bucketName string) error
 	getBucketNotification(ctx context.Context, bucketName string) (config notification.Configuration, err error)
 	getBucketPolicy(ctx context.Context, bucketName string) (string, error)
-	listObjects(ctx context.Context, bucket string, opts minio.ListObjectsOptions) <-chan minio.ObjectInfo
-	getObjectRetention(ctx context.Context, bucketName, objectName, versionID string) (mode *minio.RetentionMode, retainUntilDate *time.Time, err error)
-	getObjectLegalHold(ctx context.Context, bucketName, objectName string, opts minio.GetObjectLegalHoldOptions) (status *minio.LegalHoldStatus, err error)
-	putObject(ctx context.Context, bucketName, objectName string, reader io.Reader, objectSize int64, opts minio.PutObjectOptions) (info minio.UploadInfo, err error)
-	putObjectLegalHold(ctx context.Context, bucketName, objectName string, opts minio.PutObjectLegalHoldOptions) error
-	putObjectRetention(ctx context.Context, bucketName, objectName string, opts minio.PutObjectRetentionOptions) error
-	statObject(ctx context.Context, bucketName, prefix string, opts minio.GetObjectOptions) (objectInfo minio.ObjectInfo, err error)
+	listObjects(ctx context.Context, bucket string, opts openstor.ListObjectsOptions) <-chan openstor.ObjectInfo
+	getObjectRetention(ctx context.Context, bucketName, objectName, versionID string) (mode *openstor.RetentionMode, retainUntilDate *time.Time, err error)
+	getObjectLegalHold(ctx context.Context, bucketName, objectName string, opts openstor.GetObjectLegalHoldOptions) (status *openstor.LegalHoldStatus, err error)
+	putObject(ctx context.Context, bucketName, objectName string, reader io.Reader, objectSize int64, opts openstor.PutObjectOptions) (info openstor.UploadInfo, err error)
+	putObjectLegalHold(ctx context.Context, bucketName, objectName string, opts openstor.PutObjectLegalHoldOptions) error
+	putObjectRetention(ctx context.Context, bucketName, objectName string, opts openstor.PutObjectRetentionOptions) error
+	statObject(ctx context.Context, bucketName, prefix string, opts openstor.GetObjectOptions) (objectInfo openstor.ObjectInfo, err error)
 	setBucketEncryption(ctx context.Context, bucketName string, config *sse.Configuration) error
 	removeBucketEncryption(ctx context.Context, bucketName string) error
 	getBucketEncryption(ctx context.Context, bucketName string) (*sse.Configuration, error)
-	putObjectTagging(ctx context.Context, bucketName, objectName string, otags *tags.Tags, opts minio.PutObjectTaggingOptions) error
-	getObjectTagging(ctx context.Context, bucketName, objectName string, opts minio.GetObjectTaggingOptions) (*tags.Tags, error)
-	setObjectLockConfig(ctx context.Context, bucketName string, mode *minio.RetentionMode, validity *uint, unit *minio.ValidityUnit) error
-	getBucketObjectLockConfig(ctx context.Context, bucketName string) (mode *minio.RetentionMode, validity *uint, unit *minio.ValidityUnit, err error)
-	getObjectLockConfig(ctx context.Context, bucketName string) (lock string, mode *minio.RetentionMode, validity *uint, unit *minio.ValidityUnit, err error)
-	copyObject(ctx context.Context, dst minio.CopyDestOptions, src minio.CopySrcOptions) (minio.UploadInfo, error)
+	putObjectTagging(ctx context.Context, bucketName, objectName string, otags *tags.Tags, opts openstor.PutObjectTaggingOptions) error
+	getObjectTagging(ctx context.Context, bucketName, objectName string, opts openstor.GetObjectTaggingOptions) (*tags.Tags, error)
+	setObjectLockConfig(ctx context.Context, bucketName string, mode *openstor.RetentionMode, validity *uint, unit *openstor.ValidityUnit) error
+	getBucketObjectLockConfig(ctx context.Context, bucketName string) (mode *openstor.RetentionMode, validity *uint, unit *openstor.ValidityUnit, err error)
+	getObjectLockConfig(ctx context.Context, bucketName string) (lock string, mode *openstor.RetentionMode, validity *uint, unit *openstor.ValidityUnit, err error)
+	copyObject(ctx context.Context, dst openstor.CopyDestOptions, src openstor.CopySrcOptions) (openstor.UploadInfo, error)
 	GetBucketTagging(ctx context.Context, bucketName string) (*tags.Tags, error)
 	SetBucketTagging(ctx context.Context, bucketName string, tags *tags.Tags) error
 	RemoveBucketTagging(ctx context.Context, bucketName string) error
@@ -85,7 +73,7 @@ type MinioClient interface {
 // Define the structure of a minIO Client and define the functions that are actually used
 // from minIO api.
 type minioClient struct {
-	client *minio.Client
+	client *openstor.Client
 }
 
 func (c minioClient) GetBucketTagging(ctx context.Context, bucketName string) (*tags.Tags, error) {
@@ -100,114 +88,114 @@ func (c minioClient) RemoveBucketTagging(ctx context.Context, bucketName string)
 	return c.client.RemoveBucketTagging(ctx, bucketName)
 }
 
-// implements minio.ListBuckets(ctx)
-func (c minioClient) listBucketsWithContext(ctx context.Context) ([]minio.BucketInfo, error) {
+// implements openstor.ListBuckets(ctx)
+func (c minioClient) listBucketsWithContext(ctx context.Context) ([]openstor.BucketInfo, error) {
 	return c.client.ListBuckets(ctx)
 }
 
-// implements minio.MakeBucketWithContext(ctx, bucketName, location, objectLocking)
+// implements openstor.MakeBucketWithContext(ctx, bucketName, location, objectLocking)
 func (c minioClient) makeBucketWithContext(ctx context.Context, bucketName, location string, objectLocking bool) error {
-	return c.client.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{
+	return c.client.MakeBucket(ctx, bucketName, openstor.MakeBucketOptions{
 		Region:        location,
 		ObjectLocking: objectLocking,
 	})
 }
 
-// implements minio.SetBucketPolicyWithContext(ctx, bucketName, policy)
+// implements openstor.SetBucketPolicyWithContext(ctx, bucketName, policy)
 func (c minioClient) setBucketPolicyWithContext(ctx context.Context, bucketName, policy string) error {
 	return c.client.SetBucketPolicy(ctx, bucketName, policy)
 }
 
-// implements minio.RemoveBucket(bucketName)
+// implements openstor.RemoveBucket(bucketName)
 func (c minioClient) removeBucket(ctx context.Context, bucketName string) error {
 	return c.client.RemoveBucket(ctx, bucketName)
 }
 
-// implements minio.GetBucketNotification(bucketName)
+// implements openstor.GetBucketNotification(bucketName)
 func (c minioClient) getBucketNotification(ctx context.Context, bucketName string) (config notification.Configuration, err error) {
 	return c.client.GetBucketNotification(ctx, bucketName)
 }
 
-// implements minio.GetBucketPolicy(bucketName)
+// implements openstor.GetBucketPolicy(bucketName)
 func (c minioClient) getBucketPolicy(ctx context.Context, bucketName string) (string, error) {
 	return c.client.GetBucketPolicy(ctx, bucketName)
 }
 
-// implements minio.getBucketVersioning(ctx, bucketName)
-func (c minioClient) getBucketVersioning(ctx context.Context, bucketName string) (minio.BucketVersioningConfiguration, error) {
+// implements openstor.getBucketVersioning(ctx, bucketName)
+func (c minioClient) getBucketVersioning(ctx context.Context, bucketName string) (openstor.BucketVersioningConfiguration, error) {
 	return c.client.GetBucketVersioning(ctx, bucketName)
 }
 
-// implements minio.getBucketVersioning(ctx, bucketName)
+// implements openstor.getBucketVersioning(ctx, bucketName)
 func (c minioClient) getBucketReplication(ctx context.Context, bucketName string) (replication.Config, error) {
 	return c.client.GetBucketReplication(ctx, bucketName)
 }
 
-// implements minio.listObjects(ctx)
-func (c minioClient) listObjects(ctx context.Context, bucket string, opts minio.ListObjectsOptions) <-chan minio.ObjectInfo {
+// implements openstor.listObjects(ctx)
+func (c minioClient) listObjects(ctx context.Context, bucket string, opts openstor.ListObjectsOptions) <-chan openstor.ObjectInfo {
 	return c.client.ListObjects(ctx, bucket, opts)
 }
 
-func (c minioClient) getObjectRetention(ctx context.Context, bucketName, objectName, versionID string) (mode *minio.RetentionMode, retainUntilDate *time.Time, err error) {
+func (c minioClient) getObjectRetention(ctx context.Context, bucketName, objectName, versionID string) (mode *openstor.RetentionMode, retainUntilDate *time.Time, err error) {
 	return c.client.GetObjectRetention(ctx, bucketName, objectName, versionID)
 }
 
-func (c minioClient) getObjectLegalHold(ctx context.Context, bucketName, objectName string, opts minio.GetObjectLegalHoldOptions) (status *minio.LegalHoldStatus, err error) {
+func (c minioClient) getObjectLegalHold(ctx context.Context, bucketName, objectName string, opts openstor.GetObjectLegalHoldOptions) (status *openstor.LegalHoldStatus, err error) {
 	return c.client.GetObjectLegalHold(ctx, bucketName, objectName, opts)
 }
 
-func (c minioClient) putObject(ctx context.Context, bucketName, objectName string, reader io.Reader, objectSize int64, opts minio.PutObjectOptions) (info minio.UploadInfo, err error) {
+func (c minioClient) putObject(ctx context.Context, bucketName, objectName string, reader io.Reader, objectSize int64, opts openstor.PutObjectOptions) (info openstor.UploadInfo, err error) {
 	return c.client.PutObject(ctx, bucketName, objectName, reader, objectSize, opts)
 }
 
-func (c minioClient) putObjectLegalHold(ctx context.Context, bucketName, objectName string, opts minio.PutObjectLegalHoldOptions) error {
+func (c minioClient) putObjectLegalHold(ctx context.Context, bucketName, objectName string, opts openstor.PutObjectLegalHoldOptions) error {
 	return c.client.PutObjectLegalHold(ctx, bucketName, objectName, opts)
 }
 
-func (c minioClient) putObjectRetention(ctx context.Context, bucketName, objectName string, opts minio.PutObjectRetentionOptions) error {
+func (c minioClient) putObjectRetention(ctx context.Context, bucketName, objectName string, opts openstor.PutObjectRetentionOptions) error {
 	return c.client.PutObjectRetention(ctx, bucketName, objectName, opts)
 }
 
-func (c minioClient) statObject(ctx context.Context, bucketName, prefix string, opts minio.GetObjectOptions) (objectInfo minio.ObjectInfo, err error) {
+func (c minioClient) statObject(ctx context.Context, bucketName, prefix string, opts openstor.GetObjectOptions) (objectInfo openstor.ObjectInfo, err error) {
 	return c.client.StatObject(ctx, bucketName, prefix, opts)
 }
 
-// implements minio.SetBucketEncryption(ctx, bucketName, config)
+// implements openstor.SetBucketEncryption(ctx, bucketName, config)
 func (c minioClient) setBucketEncryption(ctx context.Context, bucketName string, config *sse.Configuration) error {
 	return c.client.SetBucketEncryption(ctx, bucketName, config)
 }
 
-// implements minio.RemoveBucketEncryption(ctx, bucketName)
+// implements openstor.RemoveBucketEncryption(ctx, bucketName)
 func (c minioClient) removeBucketEncryption(ctx context.Context, bucketName string) error {
 	return c.client.RemoveBucketEncryption(ctx, bucketName)
 }
 
-// implements minio.GetBucketEncryption(ctx, bucketName, config)
+// implements openstor.GetBucketEncryption(ctx, bucketName, config)
 func (c minioClient) getBucketEncryption(ctx context.Context, bucketName string) (*sse.Configuration, error) {
 	return c.client.GetBucketEncryption(ctx, bucketName)
 }
 
-func (c minioClient) putObjectTagging(ctx context.Context, bucketName, objectName string, otags *tags.Tags, opts minio.PutObjectTaggingOptions) error {
+func (c minioClient) putObjectTagging(ctx context.Context, bucketName, objectName string, otags *tags.Tags, opts openstor.PutObjectTaggingOptions) error {
 	return c.client.PutObjectTagging(ctx, bucketName, objectName, otags, opts)
 }
 
-func (c minioClient) getObjectTagging(ctx context.Context, bucketName, objectName string, opts minio.GetObjectTaggingOptions) (*tags.Tags, error) {
+func (c minioClient) getObjectTagging(ctx context.Context, bucketName, objectName string, opts openstor.GetObjectTaggingOptions) (*tags.Tags, error) {
 	return c.client.GetObjectTagging(ctx, bucketName, objectName, opts)
 }
 
-func (c minioClient) setObjectLockConfig(ctx context.Context, bucketName string, mode *minio.RetentionMode, validity *uint, unit *minio.ValidityUnit) error {
+func (c minioClient) setObjectLockConfig(ctx context.Context, bucketName string, mode *openstor.RetentionMode, validity *uint, unit *openstor.ValidityUnit) error {
 	return c.client.SetObjectLockConfig(ctx, bucketName, mode, validity, unit)
 }
 
-func (c minioClient) getBucketObjectLockConfig(ctx context.Context, bucketName string) (mode *minio.RetentionMode, validity *uint, unit *minio.ValidityUnit, err error) {
+func (c minioClient) getBucketObjectLockConfig(ctx context.Context, bucketName string) (mode *openstor.RetentionMode, validity *uint, unit *openstor.ValidityUnit, err error) {
 	return c.client.GetBucketObjectLockConfig(ctx, bucketName)
 }
 
-func (c minioClient) getObjectLockConfig(ctx context.Context, bucketName string) (lock string, mode *minio.RetentionMode, validity *uint, unit *minio.ValidityUnit, err error) {
+func (c minioClient) getObjectLockConfig(ctx context.Context, bucketName string) (lock string, mode *openstor.RetentionMode, validity *uint, unit *openstor.ValidityUnit, err error) {
 	return c.client.GetObjectLockConfig(ctx, bucketName)
 }
 
-func (c minioClient) copyObject(ctx context.Context, dst minio.CopyDestOptions, src minio.CopySrcOptions) (minio.UploadInfo, error) {
+func (c minioClient) copyObject(ctx context.Context, dst openstor.CopyDestOptions, src openstor.CopySrcOptions) (openstor.UploadInfo, error) {
 	return c.client.CopyObject(ctx, dst, src)
 }
 
@@ -399,11 +387,11 @@ func getConsoleCredentialsFromSession(claims *models.Principal) *credentials.Cre
 
 // newMinioClient creates a new MinIO client based on the ConsoleCredentials extracted
 // from the provided session token
-func newMinioClient(claims *models.Principal, clientIP string) (*minio.Client, error) {
+func newMinioClient(claims *models.Principal, clientIP string) (*openstor.Client, error) {
 	creds := getConsoleCredentialsFromSession(claims)
 	endpoint := getMinIOEndpoint()
 	secure := getMinIOEndpointIsSecure()
-	minioClient, err := minio.New(endpoint, &minio.Options{
+	minioClient, err := openstor.New(endpoint, &openstor.Options{
 		Creds:     creds,
 		Secure:    secure,
 		Transport: GetConsoleHTTPClient(clientIP).Transport,
@@ -412,7 +400,7 @@ func newMinioClient(claims *models.Principal, clientIP string) (*minio.Client, e
 		return nil, err
 	}
 	// set user-agent to differentiate Console UI requests for auditing.
-	minioClient.SetAppInfo("MinIO Console", pkg.Version)
+	minioClient.SetAppInfo("OpenStor Console", pkg.Version)
 	return minioClient, nil
 }
 

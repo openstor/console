@@ -1,18 +1,6 @@
-// This file is part of MinIO Console Server
-// Copyright (c) 2021 MinIO, Inc.
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// SPDX-FileCopyrightText: 2025 openstor contributors
+// SPDX-FileCopyrightText: 2015-2025 MinIO, Inc.
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package main
 
@@ -31,8 +19,8 @@ import (
 	"github.com/blang/semver/v4"
 	"github.com/cheggaaa/pb/v3"
 	"github.com/minio/cli"
-	"github.com/minio/console/pkg"
-	"github.com/minio/selfupdate"
+	"github.com/openstor/console/pkg"
+	"github.com/openstor/selfupdate"
 )
 
 func getUpdateTransport(timeout time.Duration) http.RoundTripper {
@@ -70,7 +58,7 @@ func getUpdateReaderFromURL(u string, transport http.RoundTripper) (io.ReadClose
 const defaultPubKey = "RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav"
 
 func getLatestRelease(tr http.RoundTripper) (string, error) {
-	releaseURL := "https://api.github.com/repos/minio/console/releases/latest"
+	releaseURL := "https://api.github.com/repos/openstor/console/releases/latest"
 
 	body, _, err := getUpdateReaderFromURL(releaseURL, tr)
 	if err != nil {
@@ -118,7 +106,7 @@ func updateInplace(_ *cli.Context) error {
 		return nil
 	}
 
-	consoleBin := fmt.Sprintf("https://github.com/minio/console/releases/download/%s/console-%s-%s", rel, runtime.GOOS, runtime.GOARCH)
+	consoleBin := fmt.Sprintf("https://github.com/openstor/console/releases/download/%s/console-%s-%s", rel, runtime.GOOS, runtime.GOARCH)
 	reader, length, err := getUpdateReaderFromURL(consoleBin, transport)
 	if err != nil {
 		return fmt.Errorf("unable to fetch binary from %s: %w", consoleBin, err)

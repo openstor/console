@@ -1,18 +1,6 @@
-// This file is part of MinIO Console Server
-// Copyright (c) 2021 MinIO, Inc.
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// SPDX-FileCopyrightText: 2025 openstor contributors
+// SPDX-FileCopyrightText: 2015-2025 MinIO, Inc.
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package api
 
@@ -23,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/minio/madmin-go/v3"
+	"github.com/openstor/madmin-go/v4"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -40,10 +28,10 @@ func TestAddServiceAccount(t *testing.T) {
 		AccessKey: "minio",
 		SecretKey: "minio123",
 	}
-	minioAddServiceAccountMock = func(_ context.Context, _ string, _ string, _ string, _ string, _ string, _ string, _ *time.Time, _ string) (madmin.Credentials, error) {
+	minioAddServiceAccountMock = func(_ context.Context, _ string, _ string, _ string, _ string, _ string, _ string, _ *time.Time) (madmin.Credentials, error) {
 		return mockResponse, nil
 	}
-	saCreds, err := createServiceAccount(ctx, client, policyDefinition, "", "", nil, "")
+	saCreds, err := createServiceAccount(ctx, client, policyDefinition, "", "", nil)
 	if err != nil {
 		t.Errorf("Failed on %s:, error occurred: %s", function, err.Error())
 	}
@@ -56,10 +44,10 @@ func TestAddServiceAccount(t *testing.T) {
 		AccessKey: "minio",
 		SecretKey: "minio123",
 	}
-	minioAddServiceAccountMock = func(_ context.Context, _ string, _ string, _ string, _ string, _ string, _ string, _ *time.Time, _ string) (madmin.Credentials, error) {
+	minioAddServiceAccountMock = func(_ context.Context, _ string, _ string, _ string, _ string, _ string, _ string, _ *time.Time) (madmin.Credentials, error) {
 		return madmin.Credentials{}, errors.New("error")
 	}
-	_, err = createServiceAccount(ctx, client, policyDefinition, "", "", nil, "")
+	_, err = createServiceAccount(ctx, client, policyDefinition, "", "", nil)
 	if assert.Error(err) {
 		assert.Equal("error", err.Error())
 	}

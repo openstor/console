@@ -1,5 +1,5 @@
 [Unit]
-Description=MinIO Console
+Description=OpenStor Console
 Documentation=https://min.io/docs/minio/linux/index.html
 Wants=network-online.target
 After=network-online.target

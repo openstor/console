@@ -1,5 +1,6 @@
-This file is part of MinIO Console Server
-Copyright (c) 2023 MinIO, Inc.
+This file is part of OpenStor Console Server
+SPDX-FileCopyrightText: 2025 openstor contributors
+SPDX-FileCopyrightText: 2015-2025 MinIO, Inc.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by

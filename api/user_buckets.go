@@ -1,18 +1,6 @@
-// This file is part of MinIO Console Server
-// Copyright (c) 2021 MinIO, Inc.
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// SPDX-FileCopyrightText: 2025 openstor contributors
+// SPDX-FileCopyrightText: 2015-2025 MinIO, Inc.
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package api
 
@@ -25,24 +13,24 @@ import (
 	"strings"
 	"time"
 
-	"github.com/minio/minio-go/v7"
+	"github.com/openstor/openstor-go/v7"
 
-	"github.com/minio/madmin-go/v3"
-	"github.com/minio/mc/cmd"
-	"github.com/minio/mc/pkg/probe"
-	"github.com/minio/minio-go/v7/pkg/credentials"
-	"github.com/minio/minio-go/v7/pkg/sse"
-	"github.com/minio/minio-go/v7/pkg/tags"
+	"github.com/openstor/madmin-go/v4"
+	"github.com/openstor/mc/cmd"
+	"github.com/openstor/mc/pkg/probe"
+	"github.com/openstor/openstor-go/v7/pkg/credentials"
+	"github.com/openstor/openstor-go/v7/pkg/sse"
+	"github.com/openstor/openstor-go/v7/pkg/tags"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	"github.com/minio/console/api/operations"
-	bucketApi "github.com/minio/console/api/operations/bucket"
-	"github.com/minio/console/models"
-	"github.com/minio/console/pkg/auth/token"
-	"github.com/minio/minio-go/v7/pkg/policy"
-	"github.com/minio/minio-go/v7/pkg/replication"
-	minioIAMPolicy "github.com/minio/pkg/v3/policy"
+	"github.com/openstor/console/api/operations"
+	bucketApi "github.com/openstor/console/api/operations/bucket"
+	"github.com/openstor/console/models"
+	"github.com/openstor/console/pkg/auth/token"
+	"github.com/openstor/openstor-go/v7/pkg/policy"
+	"github.com/openstor/openstor-go/v7/pkg/replication"
+	minioIAMPolicy "github.com/openstor/pkg/v3/policy"
 )
 
 func registerBucketsHandlers(api *operations.ConsoleAPI) {
@@ -408,7 +396,7 @@ func getAccountBuckets(ctx context.Context, client MinioAdmin) ([]*models.Bucket
 			bucketElem.Details.VersioningSuspended = bucket.Details.VersioningSuspended
 			if bucket.Details.Quota != nil {
 				bucketElem.Details.Quota = &models.BucketDetailsQuota{
-					Quota: int64(bucket.Details.Quota.Quota),
+					Quota: int64(bucket.Details.Quota.Size),
 					Type:  string(bucket.Details.Quota.Type),
 				}
 			}
@@ -660,7 +648,7 @@ func getDeleteBucketResponse(session *models.Principal, params bucketApi.DeleteB
 	minioClient := minioClient{client: mClient}
 	if err := removeBucket(minioClient, bucketName); err != nil {
 		resp := ErrorWithContext(ctx, err)
-		errResp := minio.ToErrorResponse(err)
+		errResp := openstor.ToErrorResponse(err)
 		if errResp.Code == "NoSuchBucket" {
 			resp.Code = 404
 		}
@@ -865,22 +853,22 @@ func setBucketRetentionConfig(ctx context.Context, client MinioClient, bucketNam
 		return errors.New("retention validity can't be nil")
 	}
 
-	var retentionMode minio.RetentionMode
+	var retentionMode openstor.RetentionMode
 	switch mode {
 	case models.ObjectRetentionModeGovernance:
-		retentionMode = minio.Governance
+		retentionMode = openstor.Governance
 	case models.ObjectRetentionModeCompliance:
-		retentionMode = minio.Compliance
+		retentionMode = openstor.Compliance
 	default:
 		return errors.New("invalid retention mode")
 	}
 
-	var retentionUnit minio.ValidityUnit
+	var retentionUnit openstor.ValidityUnit
 	switch unit {
 	case models.ObjectRetentionUnitDays:
-		retentionUnit = minio.Days
+		retentionUnit = openstor.Days
 	case models.ObjectRetentionUnitYears:
-		retentionUnit = minio.Years
+		retentionUnit = openstor.Years
 	default:
 		return errors.New("invalid retention unit")
 	}
@@ -909,7 +897,7 @@ func getSetBucketRetentionConfigResponse(session *models.Principal, params bucke
 func getBucketRetentionConfig(ctx context.Context, client MinioClient, bucketName string) (*models.GetBucketRetentionConfig, error) {
 	m, v, u, err := client.getBucketObjectLockConfig(ctx, bucketName)
 	if err != nil {
-		errResp := minio.ToErrorResponse(probe.NewError(err).ToGoError())
+		errResp := openstor.ToErrorResponse(probe.NewError(err).ToGoError())
 		if errResp.Code == "ObjectLockConfigurationNotFoundError" {
 			return &models.GetBucketRetentionConfig{}, nil
 		}
@@ -928,9 +916,9 @@ func getBucketRetentionConfig(ctx context.Context, client MinioClient, bucketNam
 
 	if m != nil {
 		switch *m {
-		case minio.Governance:
+		case openstor.Governance:
 			mode = models.ObjectRetentionModeGovernance
-		case minio.Compliance:
+		case openstor.Compliance:
 			mode = models.ObjectRetentionModeCompliance
 		default:
 			return nil, errors.New("invalid retention mode")
@@ -939,9 +927,9 @@ func getBucketRetentionConfig(ctx context.Context, client MinioClient, bucketNam
 
 	if u != nil {
 		switch *u {
-		case minio.Days:
+		case openstor.Days:
 			unit = models.ObjectRetentionUnitDays
-		case minio.Years:
+		case openstor.Years:
 			unit = models.ObjectRetentionUnitYears
 		default:
 			return nil, errors.New("invalid retention unit")
@@ -996,7 +984,7 @@ func getBucketObjectLockingResponse(session *models.Principal, params bucketApi.
 	// we will tolerate this call failing
 	_, _, _, _, err = minioClient.getObjectLockConfig(ctx, bucketName)
 	if err != nil {
-		if minio.ToErrorResponse(err).Code == "ObjectLockConfigurationNotFoundError" {
+		if openstor.ToErrorResponse(err).Code == "ObjectLockConfigurationNotFoundError" {
 			return &models.BucketObLockingResponse{
 				ObjectLockingEnabled: false,
 			}, nil

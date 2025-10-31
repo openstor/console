@@ -1,4 +1,4 @@
-# MinIO Console Server Contribution Guide [![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io)
+# OpenStor Console Contribution Guide
 
 This is a REST portal server created using [go-swagger](https://github.com/go-swagger/go-swagger)
 

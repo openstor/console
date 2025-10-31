@@ -5,10 +5,10 @@ name: Workflow
 on:
   pull_request:
     branches:
-      - master
+      - main
   push:
     branches:
-      - master
+      - main
 
 # This ensures that previous jobs for the PR are canceled when the PR is
 # updated.
@@ -22,7 +22,7 @@ jobs:
     runs-on: [ubuntu-latest]
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
         os: [ubuntu-latest]
     steps:
       - name: Check out code
@@ -64,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
         os: [ubuntu-latest]
     steps:
       - name: Check out code
@@ -112,7 +112,7 @@ jobs:
     runs-on: [ubuntu-latest]
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
     steps:
       # To build minio image, we need to clone the repository first
       - name: Clone github.com/minio/minio
@@ -150,7 +150,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
         os: [ubuntu-latest]
     steps:
       - name: Check out code
@@ -189,7 +189,7 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
         os: [ubuntu-latest]
     steps:
       - name: Check out code
@@ -228,7 +228,7 @@ jobs:
         run: npm install testcafe@3.5.0
 
       - name: Run TestCafe Tests
-        run: npx testcafe "firefox:headless" web-app/tests/subpath-nginx/ -q --skip-js-errors -c 3
+        run: npx testcafe "firefox:headless" web-app/tests/subpath-nginx/ -q --skip-js-errors -c 1
 
       - name: Clean up docker
         if: always()
@@ -243,7 +243,7 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
         os: [ubuntu-latest]
     steps:
       - name: Check out code
@@ -282,7 +282,7 @@ jobs:
         run: npm install testcafe@3.5.0
 
       - name: Run TestCafe Tests
-        run: npx testcafe "firefox:headless" web-app/tests/permissions-1/ -q --skip-js-errors -c 3
+        run: npx testcafe "firefox:headless" web-app/tests/permissions-1/ -q --skip-js-errors -c 1
 
       - name: Clean up users & policies
         run: |
@@ -296,7 +296,7 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
         os: [ubuntu-latest]
     steps:
       - name: Check out code
@@ -334,7 +334,7 @@ jobs:
         run: npm install testcafe@3.5.0
 
       - name: Run TestCafe Tests
-        run: npx testcafe "firefox:headless" web-app/tests/permissions-2/ -q --skip-js-errors -c 3
+        run: npx testcafe "firefox:headless" web-app/tests/permissions-2/ -q --skip-js-errors -c 1
 
       - name: Clean up users & policies
         run: |
@@ -348,7 +348,7 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
         os: [ubuntu-latest]
     steps:
       - name: Check out code
@@ -386,7 +386,7 @@ jobs:
         run: npm install testcafe@3.5.0
 
       - name: Run TestCafe Tests
-        run: npx testcafe "firefox:headless" web-app/tests/permissions-3/ -q --skip-js-errors -c 3
+        run: npx testcafe "firefox:headless" web-app/tests/permissions-3/ -q --skip-js-errors -c 1
 
       - name: Clean up users & policies
         run: |
@@ -400,7 +400,7 @@ jobs:
     timeout-minutes: 15
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
         os: [ubuntu-latest]
     steps:
       - name: Check out code
@@ -448,7 +448,7 @@ jobs:
     runs-on: [ubuntu-latest]
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
         os: [ubuntu-latest]
     steps:
       - name: Check out code
@@ -496,7 +496,7 @@ jobs:
     runs-on: [ubuntu-latest]
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
         os: [ubuntu-latest]
     steps:
       - name: Check out code
@@ -544,7 +544,7 @@ jobs:
     runs-on: [ubuntu-latest]
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
         os: [ubuntu-latest]
     steps:
       - name: Check out code
@@ -582,7 +582,7 @@ jobs:
         run: npm install testcafe@3.5.0
 
       - name: Run TestCafe Tests
-        run: npx testcafe "firefox:headless" web-app/tests/permissions-A/ --skip-js-errors -c 3
+        run: npx testcafe "firefox:headless" web-app/tests/permissions-A/ --skip-js-errors -c 1
 
       - name: Clean up users & policies
         run: |
@@ -595,7 +595,7 @@ jobs:
     runs-on: [ubuntu-latest]
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
         os: [ubuntu-latest]
     steps:
       - name: Check out code
@@ -633,7 +633,7 @@ jobs:
         run: npm install testcafe@3.5.0
 
       - name: Run TestCafe Tests
-        run: npx testcafe "firefox:headless" web-app/tests/permissions-B/ --skip-js-errors -c 3
+        run: npx testcafe "firefox:headless" web-app/tests/permissions-B/ --skip-js-errors -c 1
 
       - name: Clean up users & policies
         run: |
@@ -648,7 +648,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
         os: [ubuntu-latest]
     steps:
       - name: Check out code
@@ -683,7 +683,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
         os: [ubuntu-latest]
     steps:
       - name: Check out code
@@ -720,7 +720,7 @@ jobs:
 
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
 
     steps:
       - name: Check out code
@@ -804,7 +804,7 @@ jobs:
         run: yarn install --immutable
       - name: Run tests
         working-directory: ./web-app
-        run: yarn test
+        run: yarn test --watchAll=false
 
   sso-integration:
     name: SSO Integration Test
@@ -817,7 +817,7 @@ jobs:
 
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
 
     steps:
       - name: Check out code
@@ -864,7 +864,7 @@ jobs:
         run: |
           echo "The idea is to build minio image from downloaded repository";
           cd $GITHUB_WORKSPACE/minio_repository;
-          echo "replace github.com/minio/console => ../" >> go.mod
+          echo "replace github.com/openstor/console => ../" >> go.mod
 
           echo "updates to go.mod needed; to update it: go mod tidy"
           go mod tidy -compat=1.23
@@ -901,7 +901,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
         os: [ubuntu-latest]
     steps:
       - name: Check out code
@@ -1027,7 +1027,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
         os: [ubuntu-latest]
     steps:
       - name: Check out code
@@ -1069,7 +1069,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
         os: [ubuntu-latest]
     steps:
       - name: Check out code
@@ -1109,7 +1109,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
         os: [ubuntu-latest]
     steps:
       - name: Check out code
@@ -1137,7 +1137,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
         os: [ubuntu-latest]
     steps:
       - name: Check out code
@@ -1164,7 +1164,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
         os: [ubuntu-latest]
     steps:
       - name: Check out code
@@ -1192,7 +1192,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
         os: [ubuntu-latest]
     steps:
       - name: Check out code
@@ -1220,7 +1220,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.25]
         os: [ubuntu-latest]
     steps:
       - name: Check out code

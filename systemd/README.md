@@ -1,16 +1,16 @@
-# Systemd service for MinIO Console
+# Systemd service for OpenStor Console
 
-Systemd script for MinIO Console.
+Systemd script for OpenStor Console.
 
 ## Installation
 
 - Systemd script is configured to run the binary from /usr/local/bin/.
 - Systemd script is configured to run the binary as `console-user`, make sure you create this user prior using service script.
-- Download the binary. Find the relevant links for the binary https://github.com/minio/console#binary-releases.
+- Download the binary. Find the relevant links for the binary https://github.com/openstor/console#binary-releases.
 
 ## Create the Environment configuration file
 
-This file serves as input to MinIO Console systemd service.
+This file serves as input to OpenStor Console systemd service.
 
 ```sh
 $ cat <<EOT >> /etc/default/minio-console
@@ -34,7 +34,7 @@ EOT
 Download `minio-console.service` in  `/etc/systemd/system/`
 
 ```
-( cd /etc/systemd/system/; curl -O https://raw.githubusercontent.com/minio/console/master/systemd/minio-console.service )
+( cd /etc/systemd/system/; curl -O https://raw.githubusercontent.com/openstor/console/master/systemd/minio-console.service )
 ```
 
 Enable startup on boot

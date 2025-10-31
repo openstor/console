@@ -1,46 +1,111 @@
-linters-settings:
-  golint:
-    min-confidence: 0
-
-  misspell:
-    locale: US
-
-  goheader:
-    values:
-      regexp:
-        copyright-holder: Copyright \(c\) (20\d\d\-20\d\d)|2021|({{year}})
-    template-path: .license.tmpl
-
+version: "2"
 linters:
-  disable-all: true
+  default: none
   enable:
-    - goimports
-    - misspell
-    - govet
-    - revive
-    - ineffassign
-    - gosimple
+    - durationcheck
+    - gocritic
     - gomodguard
-    - gofmt
-    - unused
+    - govet
+    - ineffassign
+    - misspell
+    - revive
     - staticcheck
     - unconvert
-    - gocritic
+    - unused
+  settings:
+    goheader:
+      values:
+        regexp:
+          copyright-holder: Copyright \(c\) (20\d\d\-20\d\d)|2021|({{year}})
+      template-path: .license.tmpl
+    misspell:
+      locale: US
+  exclusions:
+    generated: lax
+    rules:
+      - path: (.+)\.go$
+        text: should have a package comment
+      - path: (.+)\.go$
+        text: comment on exported function
+      - path: (.+)\.go$
+        text: comment on exported type
+      - path: (.+)\.go$
+        text: should have comment
+      - path: (.+)\.go$
+        text: use leading k in Go names
+      - path: (.+)\.go$
+        text: comment on exported const
+      # Ignore gofumpt formatting errors
+      - path: (.+)\.go$
+        text: File is not properly formatted
+        linters:
+          - gofumpt
+      # Ignore misspell errors
+      - path: (.+)\.go$
+        text: wheter
+        linters:
+          - misspell
+      # Ignore unused parameter errors
+      - path: (.+)\.go$
+        text: unused-parameter
+        linters:
+          - revive
+      # Ignore staticcheck errors
+      - path: (.+)\.go$
+        text: QF1011
+        linters:
+          - staticcheck
+      - path: (.+)\.go$
+        text: ST1005
+        linters:
+          - staticcheck
+      - path: (.+)\.go$
+        text: QF1007
+        linters:
+          - staticcheck
+      - path: (.+)\.go$
+        text: QF1012
+        linters:
+          - staticcheck
+      - path: (.+)\.go$
+        text: ST1019
+        linters:
+          - staticcheck
+      - path: (.+)\.go$
+        text: QF1001
+        linters:
+          - staticcheck
+      - path: (.+)\.go$
+        text: QF1008
+        linters:
+          - staticcheck
+      - path: (.+)\.go$
+        text: SA1019
+        linters:
+          - staticcheck
+      - path: (.+)\.go$
+        text: QF1010
+        linters:
+          - staticcheck
+      # Ignore var-naming errors
+      - path: (.+)\.go$
+        text: var-naming
+        linters:
+          - revive
+    paths:
+      - api/operations
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
     - gofumpt
-    - durationcheck
-
-service:
-  golangci-lint-version: 1.43.0 # use the fixed version to not introduce new linters unexpectedly
-
-issues:
-  exclude-use-default: false
-  exclude:
-    - should have a package comment
-    # TODO(y4m4): Remove once all exported ident. have comments!
-    - comment on exported function
-    - comment on exported type
-    - should have comment
-    - use leading k in Go names
-    - comment on exported const
-  exclude-dirs:
-    - api/operations
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - api/operations
+      - third_party$
+      - builtin$
+      - examples$

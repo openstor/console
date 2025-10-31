@@ -1,18 +1,6 @@
-// This file is part of MinIO Console Server
-// Copyright (c) 2021 MinIO, Inc.
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// SPDX-FileCopyrightText: 2025 openstor contributors
+// SPDX-FileCopyrightText: 2015-2025 MinIO, Inc.
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package api
 
@@ -30,27 +18,27 @@ import (
 	"time"
 
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/minio/console/api/operations/object"
+	"github.com/openstor/console/api/operations/object"
+	"github.com/openstor/openstor-go/v7"
 
 	"github.com/go-openapi/swag"
-	"github.com/minio/console/models"
-	mc "github.com/minio/mc/cmd"
-	"github.com/minio/mc/pkg/probe"
-	"github.com/minio/minio-go/v7"
-	"github.com/minio/minio-go/v7/pkg/tags"
+	"github.com/openstor/console/models"
+	mc "github.com/openstor/mc/cmd"
+	"github.com/openstor/mc/pkg/probe"
+	"github.com/openstor/openstor-go/v7/pkg/tags"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	minioListObjectsMock        func(ctx context.Context, bucket string, opts minio.ListObjectsOptions) <-chan minio.ObjectInfo
-	minioGetObjectLegalHoldMock func(ctx context.Context, bucketName, objectName string, opts minio.GetObjectLegalHoldOptions) (status *minio.LegalHoldStatus, err error)
-	minioGetObjectRetentionMock func(ctx context.Context, bucketName, objectName, versionID string) (mode *minio.RetentionMode, retainUntilDate *time.Time, err error)
-	minioPutObjectMock          func(ctx context.Context, bucketName, objectName string, reader io.Reader, objectSize int64, opts minio.PutObjectOptions) (info minio.UploadInfo, err error)
-	minioPutObjectLegalHoldMock func(ctx context.Context, bucketName, objectName string, opts minio.PutObjectLegalHoldOptions) error
-	minioPutObjectRetentionMock func(ctx context.Context, bucketName, objectName string, opts minio.PutObjectRetentionOptions) error
-	minioGetObjectTaggingMock   func(ctx context.Context, bucketName, objectName string, opts minio.GetObjectTaggingOptions) (*tags.Tags, error)
-	minioPutObjectTaggingMock   func(ctx context.Context, bucketName, objectName string, otags *tags.Tags, opts minio.PutObjectTaggingOptions) error
-	minioStatObjectMock         func(ctx context.Context, bucketName, prefix string, opts minio.GetObjectOptions) (objectInfo minio.ObjectInfo, err error)
+	minioListObjectsMock        func(ctx context.Context, bucket string, opts openstor.ListObjectsOptions) <-chan openstor.ObjectInfo
+	minioGetObjectLegalHoldMock func(ctx context.Context, bucketName, objectName string, opts openstor.GetObjectLegalHoldOptions) (status *openstor.LegalHoldStatus, err error)
+	minioGetObjectRetentionMock func(ctx context.Context, bucketName, objectName, versionID string) (mode *openstor.RetentionMode, retainUntilDate *time.Time, err error)
+	minioPutObjectMock          func(ctx context.Context, bucketName, objectName string, reader io.Reader, objectSize int64, opts openstor.PutObjectOptions) (info openstor.UploadInfo, err error)
+	minioPutObjectLegalHoldMock func(ctx context.Context, bucketName, objectName string, opts openstor.PutObjectLegalHoldOptions) error
+	minioPutObjectRetentionMock func(ctx context.Context, bucketName, objectName string, opts openstor.PutObjectRetentionOptions) error
+	minioGetObjectTaggingMock   func(ctx context.Context, bucketName, objectName string, opts openstor.GetObjectTaggingOptions) (*tags.Tags, error)
+	minioPutObjectTaggingMock   func(ctx context.Context, bucketName, objectName string, otags *tags.Tags, opts openstor.PutObjectTaggingOptions) error
+	minioStatObjectMock         func(ctx context.Context, bucketName, prefix string, opts openstor.GetObjectOptions) (objectInfo openstor.ObjectInfo, err error)
 )
 
 var (
@@ -61,39 +49,39 @@ var (
 )
 
 // mock functions for minioClientMock
-func (ac minioClientMock) listObjects(ctx context.Context, bucket string, opts minio.ListObjectsOptions) <-chan minio.ObjectInfo {
+func (ac minioClientMock) listObjects(ctx context.Context, bucket string, opts openstor.ListObjectsOptions) <-chan openstor.ObjectInfo {
 	return minioListObjectsMock(ctx, bucket, opts)
 }
 
-func (ac minioClientMock) getObjectLegalHold(ctx context.Context, bucketName, objectName string, opts minio.GetObjectLegalHoldOptions) (status *minio.LegalHoldStatus, err error) {
+func (ac minioClientMock) getObjectLegalHold(ctx context.Context, bucketName, objectName string, opts openstor.GetObjectLegalHoldOptions) (status *openstor.LegalHoldStatus, err error) {
 	return minioGetObjectLegalHoldMock(ctx, bucketName, objectName, opts)
 }
 
-func (ac minioClientMock) getObjectRetention(ctx context.Context, bucketName, objectName, versionID string) (mode *minio.RetentionMode, retainUntilDate *time.Time, err error) {
+func (ac minioClientMock) getObjectRetention(ctx context.Context, bucketName, objectName, versionID string) (mode *openstor.RetentionMode, retainUntilDate *time.Time, err error) {
 	return minioGetObjectRetentionMock(ctx, bucketName, objectName, versionID)
 }
 
-func (ac minioClientMock) putObject(ctx context.Context, bucketName, objectName string, reader io.Reader, objectSize int64, opts minio.PutObjectOptions) (info minio.UploadInfo, err error) {
+func (ac minioClientMock) putObject(ctx context.Context, bucketName, objectName string, reader io.Reader, objectSize int64, opts openstor.PutObjectOptions) (info openstor.UploadInfo, err error) {
 	return minioPutObjectMock(ctx, bucketName, objectName, reader, objectSize, opts)
 }
 
-func (ac minioClientMock) putObjectLegalHold(ctx context.Context, bucketName, objectName string, opts minio.PutObjectLegalHoldOptions) error {
+func (ac minioClientMock) putObjectLegalHold(ctx context.Context, bucketName, objectName string, opts openstor.PutObjectLegalHoldOptions) error {
 	return minioPutObjectLegalHoldMock(ctx, bucketName, objectName, opts)
 }
 
-func (ac minioClientMock) putObjectRetention(ctx context.Context, bucketName, objectName string, opts minio.PutObjectRetentionOptions) error {
+func (ac minioClientMock) putObjectRetention(ctx context.Context, bucketName, objectName string, opts openstor.PutObjectRetentionOptions) error {
 	return minioPutObjectRetentionMock(ctx, bucketName, objectName, opts)
 }
 
-func (ac minioClientMock) getObjectTagging(ctx context.Context, bucketName, objectName string, opts minio.GetObjectTaggingOptions) (*tags.Tags, error) {
+func (ac minioClientMock) getObjectTagging(ctx context.Context, bucketName, objectName string, opts openstor.GetObjectTaggingOptions) (*tags.Tags, error) {
 	return minioGetObjectTaggingMock(ctx, bucketName, objectName, opts)
 }
 
-func (ac minioClientMock) putObjectTagging(ctx context.Context, bucketName, objectName string, otags *tags.Tags, opts minio.PutObjectTaggingOptions) error {
+func (ac minioClientMock) putObjectTagging(ctx context.Context, bucketName, objectName string, otags *tags.Tags, opts openstor.PutObjectTaggingOptions) error {
 	return minioPutObjectTaggingMock(ctx, bucketName, objectName, otags, opts)
 }
 
-func (ac minioClientMock) statObject(ctx context.Context, bucketName, prefix string, opts minio.GetObjectOptions) (objectInfo minio.ObjectInfo, err error) {
+func (ac minioClientMock) statObject(ctx context.Context, bucketName, prefix string, opts openstor.GetObjectOptions) (objectInfo openstor.ObjectInfo, err error) {
 	return minioStatObjectMock(ctx, bucketName, prefix, opts)
 }
 
@@ -127,10 +115,10 @@ func Test_listObjects(t *testing.T) {
 		withVersions         bool
 		withMetadata         bool
 		limit                *int32
-		listFunc             func(ctx context.Context, bucket string, opts minio.ListObjectsOptions) <-chan minio.ObjectInfo
-		objectLegalHoldFunc  func(ctx context.Context, bucketName, objectName string, opts minio.GetObjectLegalHoldOptions) (status *minio.LegalHoldStatus, err error)
-		objectRetentionFunc  func(ctx context.Context, bucketName, objectName, versionID string) (mode *minio.RetentionMode, retainUntilDate *time.Time, err error)
-		objectGetTaggingFunc func(ctx context.Context, bucketName, objectName string, opts minio.GetObjectTaggingOptions) (*tags.Tags, error)
+		listFunc             func(ctx context.Context, bucket string, opts openstor.ListObjectsOptions) <-chan openstor.ObjectInfo
+		objectLegalHoldFunc  func(ctx context.Context, bucketName, objectName string, opts openstor.GetObjectLegalHoldOptions) (status *openstor.LegalHoldStatus, err error)
+		objectRetentionFunc  func(ctx context.Context, bucketName, objectName, versionID string) (mode *openstor.RetentionMode, retainUntilDate *time.Time, err error)
+		objectGetTaggingFunc func(ctx context.Context, bucketName, objectName string, opts openstor.GetObjectTaggingOptions) (*tags.Tags, error)
 	}
 	tests := []struct {
 		test         string
@@ -146,11 +134,11 @@ func Test_listObjects(t *testing.T) {
 				recursive:    true,
 				withVersions: false,
 				withMetadata: false,
-				listFunc: func(_ context.Context, _ string, _ minio.ListObjectsOptions) <-chan minio.ObjectInfo {
-					objectStatCh := make(chan minio.ObjectInfo, 1)
-					go func(objectStatCh chan<- minio.ObjectInfo) {
+				listFunc: func(_ context.Context, _ string, _ openstor.ListObjectsOptions) <-chan openstor.ObjectInfo {
+					objectStatCh := make(chan openstor.ObjectInfo, 1)
+					go func(objectStatCh chan<- openstor.ObjectInfo) {
 						defer close(objectStatCh)
-						for _, bucket := range []minio.ObjectInfo{
+						for _, bucket := range []openstor.ObjectInfo{
 							{
 								Key:          "obj1",
 								LastModified: t1,
@@ -169,15 +157,15 @@ func Test_listObjects(t *testing.T) {
 					}(objectStatCh)
 					return objectStatCh
 				},
-				objectLegalHoldFunc: func(_ context.Context, _, _ string, _ minio.GetObjectLegalHoldOptions) (status *minio.LegalHoldStatus, err error) {
-					s := minio.LegalHoldEnabled
+				objectLegalHoldFunc: func(_ context.Context, _, _ string, _ openstor.GetObjectLegalHoldOptions) (status *openstor.LegalHoldStatus, err error) {
+					s := openstor.LegalHoldEnabled
 					return &s, nil
 				},
-				objectRetentionFunc: func(_ context.Context, _, _, _ string) (mode *minio.RetentionMode, retainUntilDate *time.Time, err error) {
-					m := minio.Governance
+				objectRetentionFunc: func(_ context.Context, _, _, _ string) (mode *openstor.RetentionMode, retainUntilDate *time.Time, err error) {
+					m := openstor.Governance
 					return &m, &tretention, nil
 				},
-				objectGetTaggingFunc: func(_ context.Context, _, _ string, _ minio.GetObjectTaggingOptions) (*tags.Tags, error) {
+				objectGetTaggingFunc: func(_ context.Context, _, _ string, _ openstor.GetObjectTaggingOptions) (*tags.Tags, error) {
 					tagMap := map[string]string{
 						"tag1": "value1",
 					}
@@ -194,8 +182,8 @@ func Test_listObjects(t *testing.T) {
 					LastModified:       t1.Format(time.RFC3339),
 					Size:               int64(1024),
 					ContentType:        "content",
-					LegalHoldStatus:    string(minio.LegalHoldEnabled),
-					RetentionMode:      string(minio.Governance),
+					LegalHoldStatus:    string(openstor.LegalHoldEnabled),
+					RetentionMode:      string(openstor.Governance),
 					RetentionUntilDate: tretention.Format(time.RFC3339),
 					Tags: map[string]string{
 						"tag1": "value1",
@@ -205,8 +193,8 @@ func Test_listObjects(t *testing.T) {
 					LastModified:       t1.Format(time.RFC3339),
 					Size:               int64(512),
 					ContentType:        "content",
-					LegalHoldStatus:    string(minio.LegalHoldEnabled),
-					RetentionMode:      string(minio.Governance),
+					LegalHoldStatus:    string(openstor.LegalHoldEnabled),
+					RetentionMode:      string(openstor.Governance),
 					RetentionUntilDate: tretention.Format(time.RFC3339),
 					Tags: map[string]string{
 						"tag1": "value1",
@@ -223,20 +211,20 @@ func Test_listObjects(t *testing.T) {
 				recursive:    true,
 				withVersions: false,
 				withMetadata: false,
-				listFunc: func(_ context.Context, _ string, _ minio.ListObjectsOptions) <-chan minio.ObjectInfo {
-					objectStatCh := make(chan minio.ObjectInfo, 1)
+				listFunc: func(_ context.Context, _ string, _ openstor.ListObjectsOptions) <-chan openstor.ObjectInfo {
+					objectStatCh := make(chan openstor.ObjectInfo, 1)
 					defer close(objectStatCh)
 					return objectStatCh
 				},
-				objectLegalHoldFunc: func(_ context.Context, _, _ string, _ minio.GetObjectLegalHoldOptions) (status *minio.LegalHoldStatus, err error) {
-					s := minio.LegalHoldEnabled
+				objectLegalHoldFunc: func(_ context.Context, _, _ string, _ openstor.GetObjectLegalHoldOptions) (status *openstor.LegalHoldStatus, err error) {
+					s := openstor.LegalHoldEnabled
 					return &s, nil
 				},
-				objectRetentionFunc: func(_ context.Context, _, _, _ string) (mode *minio.RetentionMode, retainUntilDate *time.Time, err error) {
-					m := minio.Governance
+				objectRetentionFunc: func(_ context.Context, _, _, _ string) (mode *openstor.RetentionMode, retainUntilDate *time.Time, err error) {
+					m := openstor.Governance
 					return &m, &tretention, nil
 				},
-				objectGetTaggingFunc: func(_ context.Context, _, _ string, _ minio.GetObjectTaggingOptions) (*tags.Tags, error) {
+				objectGetTaggingFunc: func(_ context.Context, _, _ string, _ openstor.GetObjectTaggingOptions) (*tags.Tags, error) {
 					tagMap := map[string]string{
 						"tag1": "value1",
 					}
@@ -258,11 +246,11 @@ func Test_listObjects(t *testing.T) {
 				recursive:    true,
 				withVersions: false,
 				withMetadata: false,
-				listFunc: func(_ context.Context, _ string, _ minio.ListObjectsOptions) <-chan minio.ObjectInfo {
-					objectStatCh := make(chan minio.ObjectInfo, 1)
-					go func(objectStatCh chan<- minio.ObjectInfo) {
+				listFunc: func(_ context.Context, _ string, _ openstor.ListObjectsOptions) <-chan openstor.ObjectInfo {
+					objectStatCh := make(chan openstor.ObjectInfo, 1)
+					go func(objectStatCh chan<- openstor.ObjectInfo) {
 						defer close(objectStatCh)
-						for _, bucket := range []minio.ObjectInfo{
+						for _, bucket := range []openstor.ObjectInfo{
 							{
 								Key:          "obj2",
 								LastModified: t1,
@@ -278,15 +266,15 @@ func Test_listObjects(t *testing.T) {
 					}(objectStatCh)
 					return objectStatCh
 				},
-				objectLegalHoldFunc: func(_ context.Context, _, _ string, _ minio.GetObjectLegalHoldOptions) (status *minio.LegalHoldStatus, err error) {
-					s := minio.LegalHoldEnabled
+				objectLegalHoldFunc: func(_ context.Context, _, _ string, _ openstor.GetObjectLegalHoldOptions) (status *openstor.LegalHoldStatus, err error) {
+					s := openstor.LegalHoldEnabled
 					return &s, nil
 				},
-				objectRetentionFunc: func(_ context.Context, _, _, _ string) (mode *minio.RetentionMode, retainUntilDate *time.Time, err error) {
-					m := minio.Governance
+				objectRetentionFunc: func(_ context.Context, _, _, _ string) (mode *openstor.RetentionMode, retainUntilDate *time.Time, err error) {
+					m := openstor.Governance
 					return &m, &tretention, nil
 				},
-				objectGetTaggingFunc: func(_ context.Context, _, _ string, _ minio.GetObjectTaggingOptions) (*tags.Tags, error) {
+				objectGetTaggingFunc: func(_ context.Context, _, _ string, _ openstor.GetObjectTaggingOptions) (*tags.Tags, error) {
 					tagMap := map[string]string{
 						"tag1": "value1",
 					}
@@ -310,11 +298,11 @@ func Test_listObjects(t *testing.T) {
 				recursive:    true,
 				withVersions: false,
 				withMetadata: false,
-				listFunc: func(_ context.Context, _ string, _ minio.ListObjectsOptions) <-chan minio.ObjectInfo {
-					objectStatCh := make(chan minio.ObjectInfo, 1)
-					go func(objectStatCh chan<- minio.ObjectInfo) {
+				listFunc: func(_ context.Context, _ string, _ openstor.ListObjectsOptions) <-chan openstor.ObjectInfo {
+					objectStatCh := make(chan openstor.ObjectInfo, 1)
+					go func(objectStatCh chan<- openstor.ObjectInfo) {
 						defer close(objectStatCh)
-						for _, bucket := range []minio.ObjectInfo{
+						for _, bucket := range []openstor.ObjectInfo{
 							{
 								Key:            "obj1",
 								LastModified:   t1,
@@ -334,15 +322,15 @@ func Test_listObjects(t *testing.T) {
 					}(objectStatCh)
 					return objectStatCh
 				},
-				objectLegalHoldFunc: func(_ context.Context, _, _ string, _ minio.GetObjectLegalHoldOptions) (status *minio.LegalHoldStatus, err error) {
-					s := minio.LegalHoldEnabled
+				objectLegalHoldFunc: func(_ context.Context, _, _ string, _ openstor.GetObjectLegalHoldOptions) (status *openstor.LegalHoldStatus, err error) {
+					s := openstor.LegalHoldEnabled
 					return &s, nil
 				},
-				objectRetentionFunc: func(_ context.Context, _, _, _ string) (mode *minio.RetentionMode, retainUntilDate *time.Time, err error) {
-					m := minio.Governance
+				objectRetentionFunc: func(_ context.Context, _, _, _ string) (mode *openstor.RetentionMode, retainUntilDate *time.Time, err error) {
+					m := openstor.Governance
 					return &m, &tretention, nil
 				},
-				objectGetTaggingFunc: func(_ context.Context, _, _ string, _ minio.GetObjectTaggingOptions) (*tags.Tags, error) {
+				objectGetTaggingFunc: func(_ context.Context, _, _ string, _ openstor.GetObjectTaggingOptions) (*tags.Tags, error) {
 					tagMap := map[string]string{
 						"tag1": "value1",
 					}
@@ -365,8 +353,8 @@ func Test_listObjects(t *testing.T) {
 					LastModified:       t1.Format(time.RFC3339),
 					Size:               int64(512),
 					ContentType:        "content",
-					LegalHoldStatus:    string(minio.LegalHoldEnabled),
-					RetentionMode:      string(minio.Governance),
+					LegalHoldStatus:    string(openstor.LegalHoldEnabled),
+					RetentionMode:      string(openstor.Governance),
 					RetentionUntilDate: tretention.Format(time.RFC3339),
 					Tags: map[string]string{
 						"tag1": "value1",
@@ -386,11 +374,11 @@ func Test_listObjects(t *testing.T) {
 				recursive:    true,
 				withVersions: false,
 				withMetadata: false,
-				listFunc: func(_ context.Context, _ string, _ minio.ListObjectsOptions) <-chan minio.ObjectInfo {
-					objectStatCh := make(chan minio.ObjectInfo, 1)
-					go func(objectStatCh chan<- minio.ObjectInfo) {
+				listFunc: func(_ context.Context, _ string, _ openstor.ListObjectsOptions) <-chan openstor.ObjectInfo {
+					objectStatCh := make(chan openstor.ObjectInfo, 1)
+					go func(objectStatCh chan<- openstor.ObjectInfo) {
 						defer close(objectStatCh)
-						for _, bucket := range []minio.ObjectInfo{
+						for _, bucket := range []openstor.ObjectInfo{
 							{
 								Key:          "obj1",
 								LastModified: t1,
@@ -403,13 +391,13 @@ func Test_listObjects(t *testing.T) {
 					}(objectStatCh)
 					return objectStatCh
 				},
-				objectLegalHoldFunc: func(_ context.Context, _, _ string, _ minio.GetObjectLegalHoldOptions) (status *minio.LegalHoldStatus, err error) {
+				objectLegalHoldFunc: func(_ context.Context, _, _ string, _ openstor.GetObjectLegalHoldOptions) (status *openstor.LegalHoldStatus, err error) {
 					return nil, errors.New("error legal")
 				},
-				objectRetentionFunc: func(_ context.Context, _, _, _ string) (mode *minio.RetentionMode, retainUntilDate *time.Time, err error) {
+				objectRetentionFunc: func(_ context.Context, _, _, _ string) (mode *openstor.RetentionMode, retainUntilDate *time.Time, err error) {
 					return nil, nil, errors.New("error retention")
 				},
-				objectGetTaggingFunc: func(_ context.Context, _, _ string, _ minio.GetObjectTaggingOptions) (*tags.Tags, error) {
+				objectGetTaggingFunc: func(_ context.Context, _, _ string, _ openstor.GetObjectTaggingOptions) (*tags.Tags, error) {
 					return nil, errors.New("error get tags")
 				},
 			},
@@ -434,11 +422,11 @@ func Test_listObjects(t *testing.T) {
 				recursive:    true,
 				withVersions: false,
 				withMetadata: false,
-				listFunc: func(_ context.Context, _ string, _ minio.ListObjectsOptions) <-chan minio.ObjectInfo {
-					objectStatCh := make(chan minio.ObjectInfo, 1)
-					go func(objectStatCh chan<- minio.ObjectInfo) {
+				listFunc: func(_ context.Context, _ string, _ openstor.ListObjectsOptions) <-chan openstor.ObjectInfo {
+					objectStatCh := make(chan openstor.ObjectInfo, 1)
+					go func(objectStatCh chan<- openstor.ObjectInfo) {
 						defer close(objectStatCh)
-						for _, bucket := range []minio.ObjectInfo{
+						for _, bucket := range []openstor.ObjectInfo{
 							{
 								Key:          "obj1",
 								LastModified: t1,
@@ -457,15 +445,15 @@ func Test_listObjects(t *testing.T) {
 					}(objectStatCh)
 					return objectStatCh
 				},
-				objectLegalHoldFunc: func(_ context.Context, _, _ string, _ minio.GetObjectLegalHoldOptions) (status *minio.LegalHoldStatus, err error) {
-					s := minio.LegalHoldEnabled
+				objectLegalHoldFunc: func(_ context.Context, _, _ string, _ openstor.GetObjectLegalHoldOptions) (status *openstor.LegalHoldStatus, err error) {
+					s := openstor.LegalHoldEnabled
 					return &s, nil
 				},
-				objectRetentionFunc: func(_ context.Context, _, _, _ string) (mode *minio.RetentionMode, retainUntilDate *time.Time, err error) {
-					m := minio.Governance
+				objectRetentionFunc: func(_ context.Context, _, _, _ string) (mode *openstor.RetentionMode, retainUntilDate *time.Time, err error) {
+					m := openstor.Governance
 					return &m, &tretention, nil
 				},
-				objectGetTaggingFunc: func(_ context.Context, _, _ string, _ minio.GetObjectTaggingOptions) (*tags.Tags, error) {
+				objectGetTaggingFunc: func(_ context.Context, _, _ string, _ openstor.GetObjectTaggingOptions) (*tags.Tags, error) {
 					tagMap := map[string]string{
 						"tag1": "value1",
 					}
@@ -502,11 +490,11 @@ func Test_listObjects(t *testing.T) {
 				recursive:    true,
 				withVersions: false,
 				withMetadata: false,
-				listFunc: func(_ context.Context, _ string, _ minio.ListObjectsOptions) <-chan minio.ObjectInfo {
-					objectStatCh := make(chan minio.ObjectInfo, 1)
-					go func(objectStatCh chan<- minio.ObjectInfo) {
+				listFunc: func(_ context.Context, _ string, _ openstor.ListObjectsOptions) <-chan openstor.ObjectInfo {
+					objectStatCh := make(chan openstor.ObjectInfo, 1)
+					go func(objectStatCh chan<- openstor.ObjectInfo) {
 						defer close(objectStatCh)
-						for _, bucket := range []minio.ObjectInfo{
+						for _, bucket := range []openstor.ObjectInfo{
 							{
 								Key:          "obj1",
 								LastModified: t1,
@@ -525,15 +513,15 @@ func Test_listObjects(t *testing.T) {
 					}(objectStatCh)
 					return objectStatCh
 				},
-				objectLegalHoldFunc: func(_ context.Context, _, _ string, _ minio.GetObjectLegalHoldOptions) (status *minio.LegalHoldStatus, err error) {
-					s := minio.LegalHoldEnabled
+				objectLegalHoldFunc: func(_ context.Context, _, _ string, _ openstor.GetObjectLegalHoldOptions) (status *openstor.LegalHoldStatus, err error) {
+					s := openstor.LegalHoldEnabled
 					return &s, nil
 				},
-				objectRetentionFunc: func(_ context.Context, _, _, _ string) (mode *minio.RetentionMode, retainUntilDate *time.Time, err error) {
-					m := minio.Governance
+				objectRetentionFunc: func(_ context.Context, _, _, _ string) (mode *openstor.RetentionMode, retainUntilDate *time.Time, err error) {
+					m := openstor.Governance
 					return &m, &tretention, nil
 				},
-				objectGetTaggingFunc: func(_ context.Context, _, _ string, _ minio.GetObjectTaggingOptions) (*tags.Tags, error) {
+				objectGetTaggingFunc: func(_ context.Context, _, _ string, _ openstor.GetObjectTaggingOptions) (*tags.Tags, error) {
 					tagMap := map[string]string{
 						"tag1": "value1",
 					}
@@ -567,11 +555,11 @@ func Test_listObjects(t *testing.T) {
 				recursive:    true,
 				withVersions: false,
 				withMetadata: false,
-				listFunc: func(_ context.Context, _ string, _ minio.ListObjectsOptions) <-chan minio.ObjectInfo {
-					objectStatCh := make(chan minio.ObjectInfo, 1)
-					go func(objectStatCh chan<- minio.ObjectInfo) {
+				listFunc: func(_ context.Context, _ string, _ openstor.ListObjectsOptions) <-chan openstor.ObjectInfo {
+					objectStatCh := make(chan openstor.ObjectInfo, 1)
+					go func(objectStatCh chan<- openstor.ObjectInfo) {
 						defer close(objectStatCh)
-						for _, bucket := range []minio.ObjectInfo{
+						for _, bucket := range []openstor.ObjectInfo{
 							{
 								Key:          "obj1",
 								LastModified: t1,
@@ -590,15 +578,15 @@ func Test_listObjects(t *testing.T) {
 					}(objectStatCh)
 					return objectStatCh
 				},
-				objectLegalHoldFunc: func(_ context.Context, _, _ string, _ minio.GetObjectLegalHoldOptions) (status *minio.LegalHoldStatus, err error) {
-					s := minio.LegalHoldEnabled
+				objectLegalHoldFunc: func(_ context.Context, _, _ string, _ openstor.GetObjectLegalHoldOptions) (status *openstor.LegalHoldStatus, err error) {
+					s := openstor.LegalHoldEnabled
 					return &s, nil
 				},
-				objectRetentionFunc: func(_ context.Context, _, _, _ string) (mode *minio.RetentionMode, retainUntilDate *time.Time, err error) {
-					m := minio.Governance
+				objectRetentionFunc: func(_ context.Context, _, _, _ string) (mode *openstor.RetentionMode, retainUntilDate *time.Time, err error) {
+					m := openstor.Governance
 					return &m, &tretention, nil
 				},
-				objectGetTaggingFunc: func(_ context.Context, _, _ string, _ minio.GetObjectTaggingOptions) (*tags.Tags, error) {
+				objectGetTaggingFunc: func(_ context.Context, _, _ string, _ openstor.GetObjectTaggingOptions) (*tags.Tags, error) {
 					tagMap := map[string]string{
 						"tag1": "value1",
 					}
@@ -615,8 +603,8 @@ func Test_listObjects(t *testing.T) {
 					LastModified:       t1.Format(time.RFC3339),
 					Size:               int64(1024),
 					ContentType:        "content",
-					LegalHoldStatus:    string(minio.LegalHoldEnabled),
-					RetentionMode:      string(minio.Governance),
+					LegalHoldStatus:    string(openstor.LegalHoldEnabled),
+					RetentionMode:      string(openstor.Governance),
 					RetentionUntilDate: tretention.Format(time.RFC3339),
 					Tags: map[string]string{
 						"tag1": "value1",
@@ -626,8 +614,8 @@ func Test_listObjects(t *testing.T) {
 					LastModified:       t1.Format(time.RFC3339),
 					Size:               int64(512),
 					ContentType:        "content",
-					LegalHoldStatus:    string(minio.LegalHoldEnabled),
-					RetentionMode:      string(minio.Governance),
+					LegalHoldStatus:    string(openstor.LegalHoldEnabled),
+					RetentionMode:      string(openstor.Governance),
 					RetentionUntilDate: tretention.Format(time.RFC3339),
 					Tags: map[string]string{
 						"tag1": "value1",
@@ -645,11 +633,11 @@ func Test_listObjects(t *testing.T) {
 				withVersions: false,
 				withMetadata: false,
 				limit:        swag.Int32(1),
-				listFunc: func(_ context.Context, _ string, _ minio.ListObjectsOptions) <-chan minio.ObjectInfo {
-					objectStatCh := make(chan minio.ObjectInfo, 1)
-					go func(objectStatCh chan<- minio.ObjectInfo) {
+				listFunc: func(_ context.Context, _ string, _ openstor.ListObjectsOptions) <-chan openstor.ObjectInfo {
+					objectStatCh := make(chan openstor.ObjectInfo, 1)
+					go func(objectStatCh chan<- openstor.ObjectInfo) {
 						defer close(objectStatCh)
-						for _, bucket := range []minio.ObjectInfo{
+						for _, bucket := range []openstor.ObjectInfo{
 							{
 								Key:          "obj1",
 								LastModified: t1,
@@ -668,15 +656,15 @@ func Test_listObjects(t *testing.T) {
 					}(objectStatCh)
 					return objectStatCh
 				},
-				objectLegalHoldFunc: func(_ context.Context, _, _ string, _ minio.GetObjectLegalHoldOptions) (status *minio.LegalHoldStatus, err error) {
-					s := minio.LegalHoldEnabled
+				objectLegalHoldFunc: func(_ context.Context, _, _ string, _ openstor.GetObjectLegalHoldOptions) (status *openstor.LegalHoldStatus, err error) {
+					s := openstor.LegalHoldEnabled
 					return &s, nil
 				},
-				objectRetentionFunc: func(_ context.Context, _, _, _ string) (mode *minio.RetentionMode, retainUntilDate *time.Time, err error) {
-					m := minio.Governance
+				objectRetentionFunc: func(_ context.Context, _, _, _ string) (mode *openstor.RetentionMode, retainUntilDate *time.Time, err error) {
+					m := openstor.Governance
 					return &m, &tretention, nil
 				},
-				objectGetTaggingFunc: func(_ context.Context, _, _ string, _ minio.GetObjectTaggingOptions) (*tags.Tags, error) {
+				objectGetTaggingFunc: func(_ context.Context, _, _ string, _ openstor.GetObjectTaggingOptions) (*tags.Tags, error) {
 					tagMap := map[string]string{
 						"tag1": "value1",
 					}
@@ -693,8 +681,8 @@ func Test_listObjects(t *testing.T) {
 					LastModified:       t1.Format(time.RFC3339),
 					Size:               int64(1024),
 					ContentType:        "content",
-					LegalHoldStatus:    string(minio.LegalHoldEnabled),
-					RetentionMode:      string(minio.Governance),
+					LegalHoldStatus:    string(openstor.LegalHoldEnabled),
+					RetentionMode:      string(openstor.Governance),
 					RetentionUntilDate: tretention.Format(time.RFC3339),
 					Tags: map[string]string{
 						"tag1": "value1",
@@ -1092,7 +1080,7 @@ func Test_putObjectLegalHold(t *testing.T) {
 		prefix        string
 		versionID     string
 		status        models.ObjectLegalHoldStatus
-		legalHoldFunc func(ctx context.Context, bucketName, objectName string, opts minio.PutObjectLegalHoldOptions) error
+		legalHoldFunc func(ctx context.Context, bucketName, objectName string, opts openstor.PutObjectLegalHoldOptions) error
 	}
 	tests := []struct {
 		test      string
@@ -1106,7 +1094,7 @@ func Test_putObjectLegalHold(t *testing.T) {
 				versionID: "someversion",
 				prefix:    "folder/file.txt",
 				status:    models.ObjectLegalHoldStatusEnabled,
-				legalHoldFunc: func(_ context.Context, _, _ string, _ minio.PutObjectLegalHoldOptions) error {
+				legalHoldFunc: func(_ context.Context, _, _ string, _ openstor.PutObjectLegalHoldOptions) error {
 					return nil
 				},
 			},
@@ -1119,7 +1107,7 @@ func Test_putObjectLegalHold(t *testing.T) {
 				versionID: "someversion",
 				prefix:    "folder/file.txt",
 				status:    models.ObjectLegalHoldStatusDisabled,
-				legalHoldFunc: func(_ context.Context, _, _ string, _ minio.PutObjectLegalHoldOptions) error {
+				legalHoldFunc: func(_ context.Context, _, _ string, _ openstor.PutObjectLegalHoldOptions) error {
 					return nil
 				},
 			},
@@ -1132,7 +1120,7 @@ func Test_putObjectLegalHold(t *testing.T) {
 				versionID: "someversion",
 				prefix:    "folder/file.txt",
 				status:    models.ObjectLegalHoldStatusDisabled,
-				legalHoldFunc: func(_ context.Context, _, _ string, _ minio.PutObjectLegalHoldOptions) error {
+				legalHoldFunc: func(_ context.Context, _, _ string, _ openstor.PutObjectLegalHoldOptions) error {
 					return errors.New("new error")
 				},
 			},
@@ -1162,7 +1150,7 @@ func Test_putObjectRetention(t *testing.T) {
 		prefix        string
 		versionID     string
 		opts          *models.PutObjectRetentionRequest
-		retentionFunc func(ctx context.Context, bucketName, objectName string, opts minio.PutObjectRetentionOptions) error
+		retentionFunc func(ctx context.Context, bucketName, objectName string, opts openstor.PutObjectRetentionOptions) error
 	}
 	tests := []struct {
 		test      string
@@ -1180,7 +1168,7 @@ func Test_putObjectRetention(t *testing.T) {
 					GovernanceBypass: false,
 					Mode:             models.NewObjectRetentionMode(models.ObjectRetentionModeGovernance),
 				},
-				retentionFunc: func(_ context.Context, _, _ string, _ minio.PutObjectRetentionOptions) error {
+				retentionFunc: func(_ context.Context, _, _ string, _ openstor.PutObjectRetentionOptions) error {
 					return nil
 				},
 			},
@@ -1197,7 +1185,7 @@ func Test_putObjectRetention(t *testing.T) {
 					GovernanceBypass: false,
 					Mode:             models.NewObjectRetentionMode(models.ObjectRetentionModeCompliance),
 				},
-				retentionFunc: func(_ context.Context, _, _ string, _ minio.PutObjectRetentionOptions) error {
+				retentionFunc: func(_ context.Context, _, _ string, _ openstor.PutObjectRetentionOptions) error {
 					return nil
 				},
 			},
@@ -1210,7 +1198,7 @@ func Test_putObjectRetention(t *testing.T) {
 				versionID: "someversion",
 				prefix:    "folder/file.txt",
 				opts:      nil,
-				retentionFunc: func(_ context.Context, _, _ string, _ minio.PutObjectRetentionOptions) error {
+				retentionFunc: func(_ context.Context, _, _ string, _ openstor.PutObjectRetentionOptions) error {
 					return nil
 				},
 			},
@@ -1227,7 +1215,7 @@ func Test_putObjectRetention(t *testing.T) {
 					GovernanceBypass: false,
 					Mode:             models.NewObjectRetentionMode(models.ObjectRetentionModeCompliance),
 				},
-				retentionFunc: func(_ context.Context, _, _ string, _ minio.PutObjectRetentionOptions) error {
+				retentionFunc: func(_ context.Context, _, _ string, _ openstor.PutObjectRetentionOptions) error {
 					return nil
 				},
 			},
@@ -1244,7 +1232,7 @@ func Test_putObjectRetention(t *testing.T) {
 					GovernanceBypass: false,
 					Mode:             models.NewObjectRetentionMode(models.ObjectRetentionModeCompliance),
 				},
-				retentionFunc: func(_ context.Context, _, _ string, _ minio.PutObjectRetentionOptions) error {
+				retentionFunc: func(_ context.Context, _, _ string, _ openstor.PutObjectRetentionOptions) error {
 					return nil
 				},
 			},
@@ -1261,7 +1249,7 @@ func Test_putObjectRetention(t *testing.T) {
 					GovernanceBypass: false,
 					Mode:             models.NewObjectRetentionMode(models.ObjectRetentionModeCompliance),
 				},
-				retentionFunc: func(_ context.Context, _, _ string, _ minio.PutObjectRetentionOptions) error {
+				retentionFunc: func(_ context.Context, _, _ string, _ openstor.PutObjectRetentionOptions) error {
 					return errors.New("new Error")
 				},
 			},
@@ -1292,7 +1280,7 @@ func Test_deleteObjectRetention(t *testing.T) {
 		bucket        string
 		prefix        string
 		versionID     string
-		retentionFunc func(ctx context.Context, bucketName, objectName string, opts minio.PutObjectRetentionOptions) error
+		retentionFunc func(ctx context.Context, bucketName, objectName string, opts openstor.PutObjectRetentionOptions) error
 	}
 	tests := []struct {
 		test      string
@@ -1305,7 +1293,7 @@ func Test_deleteObjectRetention(t *testing.T) {
 				bucket:    "buck1",
 				versionID: "someversion",
 				prefix:    "folder/file.txt",
-				retentionFunc: func(_ context.Context, _, _ string, _ minio.PutObjectRetentionOptions) error {
+				retentionFunc: func(_ context.Context, _, _ string, _ openstor.PutObjectRetentionOptions) error {
 					return nil
 				},
 			},
@@ -1336,7 +1324,7 @@ func Test_getObjectInfo(t *testing.T) {
 		bucketName string
 		prefix     string
 		versionID  string
-		statFunc   func(ctx context.Context, bucketName string, prefix string, opts minio.GetObjectOptions) (objectInfo minio.ObjectInfo, err error)
+		statFunc   func(ctx context.Context, bucketName string, prefix string, opts openstor.GetObjectOptions) (objectInfo openstor.ObjectInfo, err error)
 	}
 	tests := []struct {
 		test      string
@@ -1349,8 +1337,8 @@ func Test_getObjectInfo(t *testing.T) {
 				bucketName: "bucket1",
 				prefix:     "someprefix",
 				versionID:  "version123",
-				statFunc: func(_ context.Context, _ string, _ string, _ minio.GetObjectOptions) (minio.ObjectInfo, error) {
-					return minio.ObjectInfo{}, nil
+				statFunc: func(_ context.Context, _ string, _ string, _ openstor.GetObjectOptions) (openstor.ObjectInfo, error) {
+					return openstor.ObjectInfo{}, nil
 				},
 			},
 			wantError: nil,
@@ -1361,8 +1349,8 @@ func Test_getObjectInfo(t *testing.T) {
 				bucketName: "bucket2",
 				prefix:     "someprefi2",
 				versionID:  "version456",
-				statFunc: func(_ context.Context, _ string, _ string, _ minio.GetObjectOptions) (minio.ObjectInfo, error) {
-					return minio.ObjectInfo{}, errors.New("new Error")
+				statFunc: func(_ context.Context, _ string, _ string, _ openstor.GetObjectOptions) (openstor.ObjectInfo, error) {
+					return openstor.ObjectInfo{}, errors.New("new Error")
 				},
 			},
 			wantError: errors.New("new Error"),

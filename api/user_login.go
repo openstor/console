@@ -1,18 +1,6 @@
-// This file is part of MinIO Console Server
-// Copyright (c) 2021 MinIO, Inc.
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// SPDX-FileCopyrightText: 2025 openstor contributors
+// SPDX-FileCopyrightText: 2015-2025 MinIO, Inc.
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package api
 
@@ -26,15 +14,15 @@ import (
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/minio/console/api/operations"
-	authApi "github.com/minio/console/api/operations/auth"
-	"github.com/minio/console/models"
-	"github.com/minio/console/pkg/auth"
-	"github.com/minio/console/pkg/auth/idp/oauth2"
-	"github.com/minio/madmin-go/v3"
-	"github.com/minio/minio-go/v7/pkg/credentials"
-	"github.com/minio/pkg/v3/env"
-	xnet "github.com/minio/pkg/v3/net"
+	"github.com/openstor/console/api/operations"
+	authApi "github.com/openstor/console/api/operations/auth"
+	"github.com/openstor/console/models"
+	"github.com/openstor/console/pkg/auth"
+	"github.com/openstor/console/pkg/auth/idp/oauth2"
+	"github.com/openstor/madmin-go/v4"
+	"github.com/openstor/openstor-go/v7/pkg/credentials"
+	"github.com/openstor/pkg/v3/env"
+	xnet "github.com/openstor/pkg/v3/net"
 )
 
 func registerLoginHandlers(api *operations.ConsoleAPI) {

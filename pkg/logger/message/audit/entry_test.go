@@ -1,18 +1,6 @@
-// This file is part of MinIO Console Server
-// Copyright (c) 2022 MinIO, Inc.
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// SPDX-FileCopyrightText: 2025 openstor contributors
+// SPDX-FileCopyrightText: 2015-2025 MinIO, Inc.
+// SPDX-License-Identifier: AGPL-3.0-or-later
 
 package audit
 
@@ -52,7 +40,7 @@ func TestNewEntry(t *testing.T) {
 }
 
 // TODO: Please assist in fixing this test whenever you have the opportunity.
-// This test hasn't been executed for a long time. Upon its reintroduction in https://github.com/minio/console/pull/3171,
+// This test hasn't been executed for a long time. Upon its reintroduction in https://github.com/openstor/console/pull/3171,
 // the test began to fail. I'm uncertain whether this test was passing from the outset or not,
 // but it should pass if utilized within our coverage.
 // func TestToEntry(t *testing.T) {
